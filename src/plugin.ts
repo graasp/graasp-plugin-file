@@ -12,6 +12,8 @@ import {
   UploadPreHookTasksFunction,
   UploadPostHookTasksFunction,
 } from './types';
+import { GraaspS3FileItemOptions } from 'graasp-plugin-s3-file-item';
+import { GraaspFileItemOptions } from 'graasp-plugin-file-item';
 
 export interface GraaspPluginFileOptions {
   serviceMethod: FILE_METHODS; // S3 or local
@@ -27,16 +29,8 @@ export interface GraaspPluginFileOptions {
   downloadPostHookTasks?: DownloadPostHookTasksFunction;
 
   serviceOptions: {
-    s3: {
-      s3Region: string;
-      s3Bucket: string;
-      s3AccessKeyId: string;
-      s3SecretAccessKey: string;
-      s3UseAccelerateEndpoint: boolean;
-      s3Expiration: number;
-      // s3Instance, // for test
-    };
-    local: {};
+    s3: GraaspS3FileItemOptions;
+    local: GraaspFileItemOptions;
   };
 }
 
@@ -64,9 +58,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
     downloadPostHookTasks,
   } = options;
 
-  const {
-    taskRunner: runner,
-  } = fastify;
+  const { taskRunner: runner } = fastify;
 
   // TODO: check parameters
   // if (!region || !bucket || !accessKeyId || !secretAccessKey) {
@@ -84,11 +76,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
     },
   });
 
-  const fileTaskManager = new FileTaskManager(
-    serviceOptions,
-    serviceMethod,
-    buildFilePath,
-  );
+  const fileTaskManager = new FileTaskManager(serviceOptions, serviceMethod);
 
   fastify.post<{ Querystring: IdParam }>(
     '/upload',
@@ -107,44 +95,33 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
       const files = request.files();
 
       // TODO: upload one file at a time -> client who sends 5 requests?
-      let sequences: Task<Actor, unknown>[][];
+      let sequences: Task<Actor, unknown>[][] = [];
 
       for await (const fileObject of files) {
-        try {
-          const { filename, mimetype } = fileObject;
-          const file = await fileObject.toBuffer();
+        const { filename, mimetype } = fileObject;
+        const file = await fileObject.toBuffer();
 
-          const prehookTasks = await uploadPreHookTasks?.(itemId, {
-            member,
-            token: authTokenSubject,
-          });
+        const prehookTasks = await uploadPreHookTasks?.(itemId, {
+          member,
+          token: authTokenSubject,
+        }) ?? [];
 
-          const tasks = fileTaskManager.createUploadFileTask(member, {
-            itemId,
-            file,
-            filename,
-          });
-          
-          const size = Buffer.byteLength(file);
+        const tasks = fileTaskManager.createUploadFileTask(actor, {
+          itemId,
+          file,
+          filename,
+          mimetype,
+        });
 
-          const filepath = buildFilePath(itemId, filename);
-          const posthookTasks = await uploadPostHookTasks?.(
-            { file, filename, filepath, mimetype, size, itemId },
-            { member, token: authTokenSubject },
-          );
-          sequences.push([...prehookTasks, tasks, ...posthookTasks]);
-        } catch (e) {
-          // but what if error is catch before?
-          // temp system? create and then move?
-          // clean - unlink file
-          // ???? clean thumbnails ? ---> delete posthook
-          const tasks = fileTaskManager.createDeleteFileTask(actor, {
-            itemId: '',
-            filename: '',
-          });
-          const stats = await runner.runSingleSequence([tasks], log);
-          throw e;
-        }
+        const size = Buffer.byteLength(file);
+
+        const filepath = buildFilePath(itemId, filename);
+        const posthookTasks = await uploadPostHookTasks?.(
+          { file, filename, filepath, mimetype, size, itemId },
+          { member, token: authTokenSubject },
+        ) ?? [];
+
+        sequences.push([...prehookTasks, tasks, ...posthookTasks]);
       }
 
       // count is the number of files uploaded
@@ -176,23 +153,26 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
       // TODO: check item type is plugin's itemType
       // The last task should return the downloaded Item
 
-      const prehookTasks = await downloadPreHookTasks?.({ itemId, filename: size}, {
-        member,
-        token: authTokenSubject,
-      });
+      const prehookTasks = await downloadPreHookTasks?.(
+        { itemId, filename: size },
+        {
+          member,
+          token: authTokenSubject,
+        },
+      ) ?? [];
 
       const task = fileTaskManager.createDownloadFileTask(actor, {
         reply,
         itemId,
       });
-      task.getInput = () =>({
-          filepath: prehookTasks[prehookTasks.length -1].result
-      })
+      task.getInput = () => ({
+        filepath: prehookTasks[prehookTasks.length - 1].result,
+      });
 
       const posthookTasks = await downloadPostHookTasks?.(itemId, {
         member,
         token: authTokenSubject,
-      });
+      }) ?? [];
 
       return await runner.runSingleSequence(
         [...prehookTasks, task, ...posthookTasks],

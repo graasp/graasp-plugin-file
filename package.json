@@ -1,7 +1,7 @@
 {
-  "name": "graasp-plugin-thumbnails",
+  "name": "graasp-plugin-file",
   "version": "0.1.0",
-  "description": "Thumbnails fastify plugin for Graasp",
+  "description": "File fastify plugin for Graasp",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -14,13 +14,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/graasp/graasp-plugin-thumbnails.git"
+    "url": "git+https://github.com/graasp/graasp-plugin-file.git"
   },
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/graasp/graasp-plugin-thumbnails/issues"
+    "url": "https://github.com/graasp/graasp-plugin-file/issues"
   },
-  "homepage": "https://github.com/graasp/graasp-plugin-thumbnails#readme",
+  "homepage": "https://github.com/graasp/graasp-plugin-file#readme",
   "dependencies": {
     "content-disposition": "0.5.3",
     "fastify-multipart": "4.0.0",

@@ -1,9 +1,4 @@
-import {
-  Actor,
-  Member,
-  Task,
-  UnknownExtra,
-} from 'graasp';
+import { Actor, Member, Task, UnknownExtra } from 'graasp';
 
 export enum FILE_METHODS {
   S3,
@@ -14,6 +9,7 @@ export interface FileItemExtra extends UnknownExtra {
     name: string;
     path: string;
     mimetype: string;
+    size: string;
   };
 }
 
@@ -21,8 +17,8 @@ export interface S3FileItemExtra extends UnknownExtra {
   s3File: {
     name: string;
     path: string;
-    size?: number;
-    contenttype?: string;
+    mimetype: string;
+    size: string;
   };
 }
 
@@ -56,7 +52,7 @@ export type UploadPostHookTasksFunction = (
 ) => Promise<Task<Actor, unknown>[]>;
 
 export type DownloadPreHookTasksFunction = (
-  item: {itemId: string, filename?: string},
+  item: { itemId: string; filename?: string },
   auth: { member: Member; token: AuthTokenSubject },
 ) => Promise<Task<Actor, unknown>[]>;
 

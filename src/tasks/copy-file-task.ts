@@ -1,14 +1,13 @@
-import { Item, Actor, DatabaseTransactionHandler } from 'graasp';
+import { Actor, DatabaseTransactionHandler } from 'graasp';
 import type { FastifyLoggerInstance } from 'fastify';
 import { BaseTask } from './base-task';
 import FileService from '../fileServices/interface/fileService';
 
 export type CopyInputType = {
   newId: string;
-  // item: Item
-  filename: string;
   newFilePath: string;
   originalPath: string;
+  mimetype: string;
 };
 
 class CopyFileTask extends BaseTask<string> {
@@ -30,7 +29,7 @@ class CopyFileTask extends BaseTask<string> {
   ): Promise<void> {
     this.status = 'RUNNING';
 
-    const { originalPath, newFilePath, newId, filename } = this.input;
+    const { originalPath, newFilePath, newId, mimetype } = this.input;
 
     try {
       this._result = await this.fileService.copyFile({
@@ -38,6 +37,7 @@ class CopyFileTask extends BaseTask<string> {
         memberId: this.actor.id,
         originalPath,
         newFilePath,
+        mimetype,
       });
     } catch (error) {
       log.error(error);

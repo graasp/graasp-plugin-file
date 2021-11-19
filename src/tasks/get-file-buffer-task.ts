@@ -25,7 +25,7 @@ class GetFileBufferTask extends BaseTask<Item | void> {
   }
 
   async run(
-    handler: DatabaseTransactionHandler,
+    _handler: DatabaseTransactionHandler,
     log: FastifyLoggerInstance,
   ): Promise<void> {
     this.status = 'RUNNING';

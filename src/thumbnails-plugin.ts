@@ -5,18 +5,24 @@ import { Actor, Item } from 'graasp';
 import sharp from 'sharp';
 import basePlugin from './plugin';
 import FileTaskManager from './task-manager';
-import { FileItemExtra } from 'graasp-plugin-file-item';
-import { S3FileItemExtra } from 'graasp-plugin-s3-file-item';
+import { GraaspFileItemOptions } from 'graasp-plugin-file-item';
 import {
   DownloadPreHookTasksFunction,
   FILE_METHODS,
   UploadPreHookTasksFunction,
+  S3FileItemExtra,
+  FileItemExtra,
 } from './types';
 import { THUMBNAIL_SIZES, THUMBNAIL_FORMAT } from './utils/constants';
 import { BuildFilePathFunction } from './types';
-import { createHash } from 'crypto';
+import { hash } from './utils/helpers';
 
-// THUMBNAIL ITEM PLUGIN
+const THUMBNAIL_PREFIX = 'thumbnails';
+
+const FILE_ITEM_TYPES = {
+  S3: 's3File',
+  LOCAL: 'file',
+};
 
 export interface GraaspPluginFileItemOptions {
   serviceMethod: FILE_METHODS;
@@ -42,7 +48,7 @@ export interface GraaspPluginFileItemOptions {
       s3Expiration: number;
       // s3Instance, // for test
     };
-    local: {};
+    local: GraaspFileItemOptions;
   };
 }
 
@@ -57,22 +63,16 @@ const plugin: FastifyPluginAsync<GraaspPluginFileItemOptions> = async (
     log: defaultLogger,
   } = fastify;
 
-  const hash = (id: string): string =>
-    createHash('sha256').update(id).digest('hex');
-
   const buildFilePath = (itemId, filename) => {
     const filepath = hash(itemId)
       .match(/.{1,8}/g)
       .join('/');
-    return `thumbnails/${filepath}/${filename}`;
+    return `${THUMBNAIL_PREFIX}/${filepath}/${filename}`;
   };
 
-  const fileTaskManager = new FileTaskManager(
-    serviceOptions,
-    serviceMethod,
-    buildFilePath,
-  );
+  const fileTaskManager = new FileTaskManager(serviceOptions, serviceMethod);
 
+  // TODO
   const itemHasThumbnails = async (id: string) => {
     // check item has thumbnails
     const hasThumbnails = true;
@@ -103,7 +103,7 @@ const plugin: FastifyPluginAsync<GraaspPluginFileItemOptions> = async (
     uploadPreHookTasks: options.uploadPreHookTasks,
     /*async (itemId, { member, token }) => {
       
-      // TODO:  public ???? --> use another plugin?
+      // TODO:  public --> use another plugin?
         const tasks = iMTM.createGetOfItemTaskSequence(member, itemId);
         tasks[1].input = { validatePermission: 'write' };
         return tasks;
@@ -115,7 +115,7 @@ const plugin: FastifyPluginAsync<GraaspPluginFileItemOptions> = async (
       //  check item has thumbnails
     await itemHasThumbnails(itemId)
 
-      // TODO:  public ???? --> use another plugin?
+      // TODO:  public -> use another plugin?
         const tasks = iMTM.createGetOfItemTaskSequence(member, itemId);
         tasks[1].input = { validatePermission: 'write' };
         return tasks;
@@ -131,15 +131,15 @@ const plugin: FastifyPluginAsync<GraaspPluginFileItemOptions> = async (
         // delete thumbnails for item
         // TODO: optimize
         const tasks = [];
-        for (const { name: filename } of THUMBNAIL_SIZES) {
+        for (const { name } of THUMBNAIL_SIZES) {
+          const filepath = buildFilePath(id, name);
           const task = fileTaskManager.createDeleteFileTask(actor, {
-            itemId: id,
-            filename,
+            filepath,
           });
           tasks.push(task);
         }
         // no need to wait for thumbnails to be deleted
-        runner.runMultiple(tasks);
+        runner.runMultiple(tasks, log);
       }
     },
   );
@@ -147,23 +147,27 @@ const plugin: FastifyPluginAsync<GraaspPluginFileItemOptions> = async (
   const copyItemTaskName = itemTaskManager.getCopyTaskName();
   runner.setTaskPostHookHandler<Item>(
     copyItemTaskName,
-    async (item, actor, _data, { original }) => {
-      const { id, type, extra = {} } = item; // full copy with new `id`
+    async (item, actor, { log = defaultLogger }, { original }) => {
+      const { id } = item; // full copy with new `id`
 
       // TODO: check item has thumbnails
       if (await itemHasThumbnails(id)) {
         // copy thumbnails for copied item
+        const tasks = [];
         for (const { name: filename } of THUMBNAIL_SIZES) {
           const originalPath = buildFilePath(original.id, filename);
           const newFilePath = buildFilePath(id, filename);
 
-          fileTaskManager.createCopyFileTask(actor, {
+          const task = fileTaskManager.createCopyFileTask(actor, {
             newId: id,
-            filename: filename,
             originalPath,
             newFilePath,
+            mimetype: THUMBNAIL_FORMAT,
           });
+          tasks.push(task);
         }
+        // no need to wait
+        runner.runMultiple(tasks, log);
       }
     },
   );
@@ -171,44 +175,51 @@ const plugin: FastifyPluginAsync<GraaspPluginFileItemOptions> = async (
   const createTaskName = itemTaskManager.getCreateTaskName();
   runner.setTaskPostHookHandler<Item>(
     createTaskName,
-    async (item, actor, _data, { original }) => {
+    async (item, actor, { log = defaultLogger }) => {
       const { id, type, extra = {} } = item;
 
       // generate automatically thumbnails for s3file and file images
-      // TODO : images
       if (
-        (type === 's3File' &&
-          (extra as S3FileItemExtra)?.s3File?.contenttype.startsWith('image')) ||
-        (type === 'file' &&
+        (type === FILE_ITEM_TYPES.S3 &&
+          (extra as S3FileItemExtra)?.s3File?.mimetype.startsWith('image')) ||
+        (type === FILE_ITEM_TYPES.LOCAL &&
           (extra as FileItemExtra)?.file?.mimetype.startsWith('image'))
       ) {
         const thumbnails = await createThumbnails(id, actor);
-        // copy thumbnails for copied item
+        // create thumbnails for new image
+        const tasks = [];
         for (const { size: filename, image } of thumbnails) {
-          fileTaskManager.createUploadFileTask(actor, {
-            itemId: item.id,
+          const task = fileTaskManager.createUploadFileTask(actor, {
+            itemId: id,
             file: await image.toBuffer(),
             filename,
+            mimetype: THUMBNAIL_FORMAT,
           });
+          tasks.push(task);
         }
+        await runner.runMultiple(tasks, log);
       }
 
       // TODO: get app template thumbnails and copy in item
-      if (type === 'app') {
+      else if (type === 'app') {
         const appId = 'wefsdv'; // TODO: get app Id
-        const thumbnails = await createThumbnails(id, actor);
-        // copy thumbnails for copied item
-        for (const { size: filename, image } of thumbnails) {
-          const newFilePath = buildFilePath(id, filename);
-          const originalPath = `thumbnails/${appsTemplateRoot}/${appId}`;
 
-          fileTaskManager.createCopyFileTask(actor, {
-            filename,
+        // copy thumbnails of app template for copied item
+        const tasks = [];
+        for (const { name } of THUMBNAIL_SIZES) {
+          const newFilePath = buildFilePath(id, name);
+          const originalPath = `${THUMBNAIL_PREFIX}/${appsTemplateRoot}/${appId}/${name}`;
+
+          const task = fileTaskManager.createCopyFileTask(actor, {
             newId: id,
             originalPath,
             newFilePath,
+            mimetype: THUMBNAIL_FORMAT,
           });
+          tasks.push(task);
         }
+        // no need to wait
+        runner.runMultiple(tasks, log);
       }
     },
   );

@@ -6,6 +6,7 @@ export default interface FileService {
     memberId: string;
     originalPath: string;
     newFilePath: string;
+    mimetype: string;
   }): Promise<string>;
 
   deleteFile(args: { filepath: string }): Promise<void>;
@@ -15,12 +16,13 @@ export default interface FileService {
     fileBuffer: Buffer;
     memberId: string;
     filepath: string;
+    mimetype: string;
   }): Promise<void>;
 
   // get file buffer, used for generating thumbnails
   getFileBuffer(args: { filepath: string }): Promise<Buffer>;
 
-  downloadFileUrl(args: {
+  downloadFile(args: {
     reply: FastifyReply;
     filepath: string;
     itemId: string;

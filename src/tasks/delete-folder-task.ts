@@ -3,7 +3,7 @@ import type { FastifyLoggerInstance } from 'fastify';
 import { BaseTask } from './base-task';
 
 export type DeleteFolderInputType = {
-  folderPath?:string
+  folderPath?: string;
 };
 
 class DeleteFolderTask extends BaseTask<Item | void> {
@@ -20,7 +20,7 @@ class DeleteFolderTask extends BaseTask<Item | void> {
   }
 
   async run(
-    handler: DatabaseTransactionHandler,
+    _handler: DatabaseTransactionHandler,
     log: FastifyLoggerInstance,
   ): Promise<void> {
     this.status = 'RUNNING';
@@ -28,7 +28,6 @@ class DeleteFolderTask extends BaseTask<Item | void> {
     const { folderPath } = this.input;
 
     try {
-
       await this.fileService.deleteFolder({ folderPath });
     } catch (error) {
       log.error(error);

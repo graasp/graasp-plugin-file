@@ -11,26 +11,22 @@ import DeleteFolderTask, {
   DeleteFolderInputType,
 } from './tasks/delete-folder-task';
 import UploadFileTask, { UploadFileInputType } from './tasks/upload-file-task';
-import { FILE_METHODS, BuildFilePathFunction } from './types';
+import { FILE_METHODS } from './types';
 import { LocalService } from './fileServices/localService';
 import { S3Service } from './fileServices/s3Service';
 
 class TaskManager {
-  private service: LocalService | S3Service;
+  private readonly fileService: LocalService | S3Service;
 
-  constructor(
-    options,
-    serviceMethod: FILE_METHODS,
-    buildFilePath: BuildFilePathFunction,
-  ) {
-    let service;
+  constructor(options, serviceMethod: FILE_METHODS) {
+    
     switch (serviceMethod) {
       case FILE_METHODS.S3:
-        service = new S3Service(options.s3, buildFilePath);
+        this.fileService = new S3Service(options.s3);
         break;
       case FILE_METHODS.LOCAL:
       default:
-        service = new LocalService(options.local, buildFilePath);
+        this.fileService = new LocalService(options.local);
         break;
     }
   }
@@ -46,7 +42,7 @@ class TaskManager {
     member: Actor,
     data: UploadFileInputType,
   ): Task<Actor, unknown> {
-    return new UploadFileTask(member, this.service, data);
+    return new UploadFileTask(member, this.fileService, data);
   }
 
   createDownloadFileTask(
@@ -54,26 +50,26 @@ class TaskManager {
     data: DownloadFileInputType,
     size?: string,
   ): Task<Actor, unknown> {
-    return new DownloadFileTask(member, this.service, data);
+    return new DownloadFileTask(member, this.fileService, data);
   }
 
   createDeleteFileTask(
     member: Actor,
     data: DeleteFileInputType,
   ): Task<Actor, unknown> {
-    return new DeleteFileTask(member, this.service, data);
+    return new DeleteFileTask(member, this.fileService, data);
   }
 
   createDeleteFolderTask(
     member: Actor,
     data: DeleteFolderInputType,
   ): Task<Actor, unknown> {
-    return new DeleteFolderTask(member, this.service, data);
+    return new DeleteFolderTask(member, this.fileService, data);
   }
 
   createCopyFileTask(member: Actor, data: CopyInputType): Task<Actor, unknown> {
     // new filename is new item id
-    return new CopyFileTask(member, this.service, data);
+    return new CopyFileTask(member, this.fileService, data);
   }
 
   createGetFileBufferTask(
@@ -81,7 +77,7 @@ class TaskManager {
     data: GetFileBufferInputType,
   ): Task<Actor, unknown> {
     // new filename is new item id
-    return new GetFileBufferTask(member, this.service, data);
+    return new GetFileBufferTask(member, this.fileService, data);
   }
 }
 

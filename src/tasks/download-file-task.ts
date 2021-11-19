@@ -1,8 +1,6 @@
-import { Item, Actor, DatabaseTransactionHandler } from 'graasp';
-import contentDisposition from 'content-disposition';
-import fs from 'fs';
+import { Actor, DatabaseTransactionHandler } from 'graasp';
+import { ReadStream } from 'fs';
 import type { FastifyLoggerInstance, FastifyReply } from 'fastify';
-import { StatusCodes } from 'http-status-codes';
 import { BaseTask } from './base-task';
 import FileService from '../fileServices/interface/fileService';
 
@@ -12,7 +10,7 @@ export type DownloadFileInputType = {
   itemId?: string;
 };
 
-class DownloadFileTask extends BaseTask<fs.ReadStream> {
+class DownloadFileTask extends BaseTask<ReadStream> {
   get name(): string {
     return DownloadFileTask.name;
   }
@@ -29,40 +27,18 @@ class DownloadFileTask extends BaseTask<fs.ReadStream> {
     this.input = input || {};
   }
 
-  /**
-   *
-   * thumbnail
-   * prehook:
-   * - check has access to file
-   * s3
-   * prehook:
-   * - check has access to file
-   *
-   * ----> public should have access without testing item permissions
-   * ---->>>> ENFORCE task to return item ?
-   *
-   *
-   *
-   * default prehook: (id, member) => {
-   * return itemTaskManager.createGetItemTaskSequence(id, member)
-   * }
-   * public prehook: (id, member) => {
-   * // no check over permissions
-   * return itemTaskManager.createGetItemTask(id, member)
-   * }
-   */
-
   async run(
-    handler: DatabaseTransactionHandler,
-    log: FastifyLoggerInstance,
+    _handler: DatabaseTransactionHandler,
+    _log: FastifyLoggerInstance,
   ): Promise<void> {
     this.status = 'RUNNING';
 
     const { reply, itemId, filepath } = this.input;
 
     // last task should return item
+    // s3 returns null and redirect
     this._result =
-      (await this.fileService.downloadFileUrl({
+      (await this.fileService.downloadFile({
         reply,
         filepath,
         itemId,

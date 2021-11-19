@@ -7,6 +7,7 @@ export type UploadFileInputType = {
   itemId: string;
   file: Buffer;
   filename: string;
+  mimetype: string;
 };
 
 class UploadFileTask extends BaseTask<Item | void> {
@@ -27,17 +28,18 @@ class UploadFileTask extends BaseTask<Item | void> {
   }
 
   async run(
-    handler: DatabaseTransactionHandler,
-    log: FastifyLoggerInstance,
+    _handler: DatabaseTransactionHandler,
+    _log: FastifyLoggerInstance,
   ): Promise<void> {
     this.status = 'RUNNING';
 
-    const { file, itemId, filename } = this.input;
+    const { file, mimetype, filename } = this.input;
 
     await this.fileService.uploadFile({
       fileBuffer: file,
       filepath: filename,
       memberId: this.actor.id,
+      mimetype,
     });
 
     this.status = 'OK';

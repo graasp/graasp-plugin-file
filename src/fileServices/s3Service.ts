@@ -1,24 +1,15 @@
 import S3 from 'aws-sdk/clients/s3';
-import path from 'path';
+import contentDisposition from 'content-disposition';
 import { GraaspS3FileItemOptions } from 'graasp-plugin-s3-file-item';
 import FileService from './interface/fileService';
-import { mimetype } from '../utils/constants';
-import contentDisposition from 'content-disposition';
-import { ThumbnailNotFound } from '../utils/errors';
-import { BuildFilePathFunction } from '../types';
-import { FastifyReply } from 'fastify';
+import { S3FileNotFound } from '../utils/errors';
 
 export class S3Service implements FileService {
   private readonly options: GraaspS3FileItemOptions;
   private readonly s3Instance: S3;
-  private readonly buildFilePath: BuildFilePathFunction;
 
-  constructor(
-    options: GraaspS3FileItemOptions,
-    buildFilePath: BuildFilePathFunction,
-  ) {
+  constructor(options: GraaspS3FileItemOptions) {
     this.options = options;
-    this.buildFilePath = buildFilePath;
 
     const {
       s3Region: region,
@@ -45,7 +36,6 @@ export class S3Service implements FileService {
     return metadata;
   }
 
-
   // get file buffer, used for generating thumbnails
   async getFileBuffer({ filepath }): Promise<Buffer> {
     const { s3Bucket: bucket } = this.options;
@@ -56,20 +46,19 @@ export class S3Service implements FileService {
     return (await this.s3Instance.getObject(params).promise()).Body as Buffer;
   }
 
-  async downloadFileUrl(args: { reply: FastifyReply; filepath: string }) {
+  async downloadFile({ reply, filepath, itemId }) {
     const { s3Bucket: bucket, s3Region: region } = this.options;
     try {
       // check whether file exists
-      await this.getMetadata(args.filepath);
+      await this.getMetadata(filepath);
 
       // Redirect to url, TODO: Change for something better
-      args.reply.redirect(
-        `https://${bucket}.s3.${region}.amazonaws.com/${args.filepath}`,
+      reply.redirect(
+        `https://${bucket}.s3.${region}.amazonaws.com/${filepath}`,
       );
     } catch (e) {
       // TODO: check error and return the corresponding one
-      // FileNotFound or GraaspError
-      throw new ThumbnailNotFound();
+      throw new S3FileNotFound({ filepath, itemId });
     }
   }
 
@@ -79,6 +68,7 @@ export class S3Service implements FileService {
     originalPath,
     newFilePath,
     filename,
+    mimetype,
   }): Promise<string> {
     const { s3Bucket: bucket } = this.options;
 
@@ -117,26 +107,32 @@ export class S3Service implements FileService {
 
     // get all objects in a key
     // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#listObjectsV2-property
-    const { Contents } = await this.s3Instance.listObjectsV2({Bucket:bucket, Prefix:folderPath}).promise()
-    
-    const filepaths = Contents.map(({ Key }) => Key)
-    
+    const { Contents } = await this.s3Instance
+      .listObjectsV2({ Bucket: bucket, Prefix: folderPath })
+      .promise();
+
+    const filepaths = Contents.map(({ Key }) => Key);
+
     await this.s3Instance
       .deleteObjects({
         Bucket: bucket,
         Delete: {
-          Objects: filepaths.map(filepath => 
-             ({
+          Objects: filepaths.map((filepath) => ({
             Key: filepath,
-           })), 
-          Quiet: false
-         }
+          })),
+          Quiet: false,
+        },
       })
       .promise();
   }
 
   // upload
-  async uploadFile({ fileBuffer, memberId, filepath }): Promise<void> {
+  async uploadFile({
+    fileBuffer,
+    memberId,
+    filepath,
+    mimetype,
+  }): Promise<void> {
     const { s3Bucket: bucket } = this.options;
 
     const params = {
