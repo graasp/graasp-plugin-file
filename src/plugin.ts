@@ -159,9 +159,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
         reply,
         itemId,
       });
-      task.getInput = () => ({
-        filepath: prehookTasks[prehookTasks.length - 1].getResult(),
-      });
+      task.getInput = () => prehookTasks[prehookTasks.length - 1].getResult();
 
       const posthookTasks =
         (await downloadPostHookTasks?.(itemId, {

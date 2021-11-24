@@ -1,7 +1,7 @@
 // TODO DELETE : THIS IS AN EXAMPLE
 
 import { FastifyPluginAsync } from 'fastify';
-import { Actor, Item } from 'graasp';
+import { Actor, Item, UnknownExtra } from 'graasp';
 import sharp from 'sharp';
 import basePlugin from './plugin';
 import FileTaskManager from './task-manager';
@@ -14,10 +14,10 @@ import {
   GraaspFileItemOptions
 } from './types';
 import { THUMBNAIL_SIZES, THUMBNAIL_FORMAT } from './utils/constants';
-import { BuildFilePathFunction } from './types';
 import { hash } from './utils/helpers';
+import { GraaspS3FileItemOptions } from '.';
 
-const THUMBNAIL_PREFIX = 'thumbnails';
+const THUMBNAIL_PREFIX = '/thumbnails';
 
 const FILE_ITEM_TYPES = {
   S3: 's3File',
@@ -27,9 +27,9 @@ const FILE_ITEM_TYPES = {
 export interface GraaspPluginFileItemOptions {
   serviceMethod: ServiceMethod;
 
-  buildFilePath: BuildFilePathFunction;
+  //buildFilePath: BuildFilePathFunction;
 
-  itemType: string; // ITEM_TYPES,
+  // itemType: string; // ITEM_TYPES,
 
   // TODO: use prehook in uploadPrehook.... for public
   uploadPreHookTasks: UploadPreHookTasksFunction;
@@ -39,15 +39,7 @@ export interface GraaspPluginFileItemOptions {
   appsTemplateRoot: string; // apps/template
 
   serviceOptions: {
-    s3: {
-      s3Region: string;
-      s3Bucket: string;
-      s3AccessKeyId: string;
-      s3SecretAccessKey: string;
-      s3UseAccelerateEndpoint: boolean;
-      s3Expiration: number;
-      // s3Instance, // for test
-    };
+    s3: GraaspS3FileItemOptions;
     local: GraaspFileItemOptions;
   };
 }
@@ -79,9 +71,30 @@ const plugin: FastifyPluginAsync<GraaspPluginFileItemOptions> = async (
     return hasThumbnails;
   };
 
-  const createThumbnails = async (itemId: string, actor: Actor) => {
+  const getFileExtra = (
+    extra: UnknownExtra,
+  ): {
+    name: string;
+    path: string;
+    size: string;
+    mimetype: string;
+  } => {
+    switch (serviceMethod) {
+      case ServiceMethod.S3:
+        return (extra as S3FileItemExtra).s3File;
+      case ServiceMethod.LOCAL:
+      default:
+        return (extra as FileItemExtra).file;
+    }
+  };
+
+  const getFilePathFromItemExtra = (extra: UnknownExtra) => {
+    return getFileExtra(extra).path;
+  };
+
+  const createThumbnails = async (item: Item<UnknownExtra>, actor: Actor) => {
     // get original image
-    const filename = buildFilePath(itemId, undefined); //  TODO: get filename from item extra
+    const filename = getFilePathFromItemExtra(item.extra); //  TODO: get filename from item extra
     const task = fileTaskManager.createGetFileBufferTask(actor, { filename });
     const originalImage = await runner.runSingle(task);
 
@@ -185,13 +198,13 @@ const plugin: FastifyPluginAsync<GraaspPluginFileItemOptions> = async (
         (type === FILE_ITEM_TYPES.LOCAL &&
           (extra as FileItemExtra)?.file?.mimetype.startsWith('image'))
       ) {
-        const thumbnails = await createThumbnails(id, actor);
+        const thumbnails = await createThumbnails(item, actor);
         // create thumbnails for new image
         const tasks = [];
         for (const { size: filename, image } of thumbnails) {
           const task = fileTaskManager.createUploadFileTask(actor, {
             file: await image.toBuffer(),
-            filename,
+            filename: buildFilePath(id, filename),
             mimetype: THUMBNAIL_FORMAT,
           });
           tasks.push(task);

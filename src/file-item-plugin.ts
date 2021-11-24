@@ -79,7 +79,7 @@ const plugin: FastifyPluginAsync<GraaspPluginFileItemOptions> = async (
     return `${storageRootPath}${filepath}`;
   };
 
-  const fileTaskManager = new FileTaskManager(options, serviceMethod);
+  const fileTaskManager = new FileTaskManager(serviceOptions, serviceMethod);
 
   // TODO: this should not be counted in thumbnails?
   if (shouldLimit) {
@@ -139,7 +139,13 @@ const plugin: FastifyPluginAsync<GraaspPluginFileItemOptions> = async (
       // await itemMembershipService.canRead(member.id, item as Item, db.pool);
       const tasks = itemTaskManager.createGetTaskSequence(member, itemId);
       const last = tasks[tasks.length - 1];
-      last.getResult = () => getFilePathFromItemExtra((tasks[0].result as Item<UnknownExtra>).extra)
+      last.getResult = () => {
+        const extra = (tasks[0].result as Item<UnknownExtra>).extra;
+        return {
+          filepath: getFilePathFromItemExtra(extra),
+          mimetype: getFileExtra(extra).mimetype,
+        }
+      } 
       return tasks;
     },
 
@@ -204,7 +210,7 @@ const plugin: FastifyPluginAsync<GraaspPluginFileItemOptions> = async (
       const filepath = (await runner.runSingle(task)) as string;
 
       // update item copy's 'extra'
-      if (serviceMethod === ServiceMethod.LOCAL) {
+      if (serviceMethod === ServiceMethod.S3) {
         (item.extra as S3FileItemExtra).s3File.path = filepath;
       } else {
         (item.extra as FileItemExtra).file.path = filepath;

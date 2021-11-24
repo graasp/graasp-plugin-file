@@ -8,6 +8,7 @@ export type DownloadFileInputType = {
   reply?: FastifyReply;
   filepath?: string;
   itemId?: string;
+  mimetype?: string;
 };
 
 class DownloadFileTask extends BaseTask<ReadStream> {
@@ -33,7 +34,7 @@ class DownloadFileTask extends BaseTask<ReadStream> {
   ): Promise<void> {
     this.status = 'RUNNING';
 
-    const { reply, itemId, filepath } = this.input;
+    const { reply, itemId, filepath, mimetype } = this.input;
 
     // last task should return item
     // s3 returns null and redirect
@@ -42,6 +43,7 @@ class DownloadFileTask extends BaseTask<ReadStream> {
         reply,
         filepath,
         itemId,
+        mimetype
       })) || null;
 
     this.status = 'OK';

@@ -6,7 +6,6 @@ import { Readable } from 'stream';
 import { pipeline } from 'stream/promises';
 import FileService from './interface/fileService';
 import contentDisposition from 'content-disposition';
-import { mimetype } from '../utils/constants';
 import { FileNotFound } from '../utils/errors';
 
 export class LocalService implements FileService {
@@ -16,14 +15,14 @@ export class LocalService implements FileService {
     this.options = options;
   }
 
-  buildFullPath = (filepath) => `${this.options.storageRootPath}${filepath}`;
+  buildFullPath = (filepath: string) => `${this.options.storageRootPath}${filepath}`;
 
   // get file buffer, used for generating thumbnails
   async getFileBuffer({ filepath }): Promise<Buffer> {
     return await readFile(this.buildFullPath(filepath));
   }
 
-  async downloadFile({ reply, filepath, itemId }) {
+  async downloadFile({ reply, filepath, itemId, mimetype }) {
     // ensure the file exists, if not throw error
     try {
       await access(this.buildFullPath(filepath));
@@ -47,7 +46,7 @@ export class LocalService implements FileService {
     const originalFullPath = this.buildFullPath(originalPath);
     const newFileFullPath = this.buildFullPath(newFilePath);
 
-    await mkdir(newFileFullPath, { recursive: true });
+    await mkdir(path.dirname(newFileFullPath), { recursive: true });
 
     await copyFile(originalFullPath, newFileFullPath);
 

@@ -26,5 +26,6 @@ export default interface FileService {
     reply: FastifyReply;
     filepath: string;
     itemId: string;
+    mimetype: string;
   }): Promise<ReadStream> | Promise<void>;
 }

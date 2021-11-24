@@ -14,11 +14,12 @@ import UploadFileTask, { UploadFileInputType } from './tasks/upload-file-task';
 import { ServiceMethod } from './types';
 import { LocalService } from './fileServices/localService';
 import { S3Service } from './fileServices/s3Service';
+import { GraaspFileItemOptions, GraaspS3FileItemOptions } from './types';
 
 class TaskManager {
   private readonly fileService: LocalService | S3Service;
 
-  constructor(options, serviceMethod: ServiceMethod) {
+  constructor(options: { s3: GraaspS3FileItemOptions, local: GraaspFileItemOptions }, serviceMethod: ServiceMethod) {
     switch (serviceMethod) {
       case ServiceMethod.S3:
         this.fileService = new S3Service(options.s3);

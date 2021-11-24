@@ -7,7 +7,7 @@ export type GetFileBufferInputType = {
   filename?: string;
 };
 
-class GetFileBufferTask extends BaseTask<Item | void> {
+class GetFileBufferTask extends BaseTask<Buffer> {
   get name(): string {
     return GetFileBufferTask.name;
   }
@@ -33,7 +33,7 @@ class GetFileBufferTask extends BaseTask<Item | void> {
     const { filename } = this.input;
 
     try {
-      await this.fileService.getFileBuffer({ filepath: filename });
+      this._result = await this.fileService.getFileBuffer({ filepath: filename });
     } catch (error) {
       log.error(error);
     }
