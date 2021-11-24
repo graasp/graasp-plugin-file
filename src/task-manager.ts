@@ -11,20 +11,19 @@ import DeleteFolderTask, {
   DeleteFolderInputType,
 } from './tasks/delete-folder-task';
 import UploadFileTask, { UploadFileInputType } from './tasks/upload-file-task';
-import { FILE_METHODS } from './types';
+import { ServiceMethod } from './types';
 import { LocalService } from './fileServices/localService';
 import { S3Service } from './fileServices/s3Service';
 
 class TaskManager {
   private readonly fileService: LocalService | S3Service;
 
-  constructor(options, serviceMethod: FILE_METHODS) {
-    
+  constructor(options, serviceMethod: ServiceMethod) {
     switch (serviceMethod) {
-      case FILE_METHODS.S3:
+      case ServiceMethod.S3:
         this.fileService = new S3Service(options.s3);
         break;
-      case FILE_METHODS.LOCAL:
+      case ServiceMethod.LOCAL:
       default:
         this.fileService = new LocalService(options.local);
         break;

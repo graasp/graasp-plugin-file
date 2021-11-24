@@ -5,13 +5,13 @@ import { Actor, Item } from 'graasp';
 import sharp from 'sharp';
 import basePlugin from './plugin';
 import FileTaskManager from './task-manager';
-import { GraaspFileItemOptions } from 'graasp-plugin-file-item';
 import {
   DownloadPreHookTasksFunction,
-  FILE_METHODS,
+  ServiceMethod,
   UploadPreHookTasksFunction,
   S3FileItemExtra,
   FileItemExtra,
+  GraaspFileItemOptions
 } from './types';
 import { THUMBNAIL_SIZES, THUMBNAIL_FORMAT } from './utils/constants';
 import { BuildFilePathFunction } from './types';
@@ -25,7 +25,7 @@ const FILE_ITEM_TYPES = {
 };
 
 export interface GraaspPluginFileItemOptions {
-  serviceMethod: FILE_METHODS;
+  serviceMethod: ServiceMethod;
 
   buildFilePath: BuildFilePathFunction;
 
@@ -190,7 +190,6 @@ const plugin: FastifyPluginAsync<GraaspPluginFileItemOptions> = async (
         const tasks = [];
         for (const { size: filename, image } of thumbnails) {
           const task = fileTaskManager.createUploadFileTask(actor, {
-            itemId: id,
             file: await image.toBuffer(),
             filename,
             mimetype: THUMBNAIL_FORMAT,

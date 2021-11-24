@@ -5,16 +5,14 @@ import FileTaskManager from './task-manager';
 import path from 'path';
 
 import basePlugin from './plugin';
-import { FILE_METHODS, FileItemExtra, S3FileItemExtra } from './types';
+import { ServiceMethod, FileItemExtra, S3FileItemExtra, GraaspFileItemOptions, GraaspS3FileItemOptions } from './types';
 import { Item, UnknownExtra } from 'graasp';
 import graaspFileUploadLimiter from 'graasp-file-upload-limiter';
-import { GraaspFileItemOptions } from 'graasp-plugin-file-item';
 import { randomHexOf4 } from './utils/helpers';
-import { GraaspS3FileItemOptions } from 'graasp-plugin-s3-file-item';
 
 export interface GraaspPluginFileItemOptions {
   shouldLimit: boolean;
-  serviceMethod: FILE_METHODS;
+  serviceMethod: ServiceMethod;
 
   storageRootPath: string;
 
@@ -43,7 +41,7 @@ const plugin: FastifyPluginAsync<GraaspPluginFileItemOptions> = async (
 
   // CHECK PARAMS
   if (
-    serviceMethod === FILE_METHODS.LOCAL &&
+    serviceMethod === ServiceMethod.LOCAL &&
     (!storageRootPath.endsWith('/') || !storageRootPath.startsWith('/'))
   ) {
     throw new Error(
@@ -51,7 +49,7 @@ const plugin: FastifyPluginAsync<GraaspPluginFileItemOptions> = async (
     );
   }
 
-  if (serviceMethod === FILE_METHODS.S3) {
+  if (serviceMethod === ServiceMethod.S3) {
     if (!storageRootPath.endsWith('/')) {
       throw new Error(
         'graasp-plugin-file: s3 storage service root path is malformed',
@@ -70,7 +68,7 @@ const plugin: FastifyPluginAsync<GraaspPluginFileItemOptions> = async (
 
   // define current item type
   const SERVICE_ITEM_TYPE =
-    serviceMethod === FILE_METHODS.S3
+    serviceMethod === ServiceMethod.S3
       ? FILE_ITEM_TYPES.S3
       : FILE_ITEM_TYPES.LOCAL;
 
@@ -100,7 +98,7 @@ const plugin: FastifyPluginAsync<GraaspPluginFileItemOptions> = async (
       // !!!!!! item could be empty if want to upload file in root
       // check has permission on parent id
       // await itemMembershipService.canRead(member.id, item as Item, db.pool);
-      if(!parentId) return [];
+      if (!parentId) return [];
 
       const tasks = iMTM.createGetOfItemTaskSequence(member, parentId);
       tasks[1].input = { validatePermission: 'write' };
@@ -140,6 +138,8 @@ const plugin: FastifyPluginAsync<GraaspPluginFileItemOptions> = async (
       // check has permission on item id
       // await itemMembershipService.canRead(member.id, item as Item, db.pool);
       const tasks = itemTaskManager.createGetTaskSequence(member, itemId);
+      const last = tasks[tasks.length - 1];
+      last.getResult = () => getFilePathFromItemExtra((tasks[0].result as Item<UnknownExtra>).extra)
       return tasks;
     },
 
@@ -155,16 +155,16 @@ const plugin: FastifyPluginAsync<GraaspPluginFileItemOptions> = async (
     mimetype: string;
   } => {
     switch (serviceMethod) {
-      case FILE_METHODS.S3:
+      case ServiceMethod.S3:
         return (extra as S3FileItemExtra).s3File;
-      case FILE_METHODS.LOCAL:
+      case ServiceMethod.LOCAL:
       default:
         return (extra as FileItemExtra).file;
     }
   };
 
   const getFilePathFromItemExtra = (extra: UnknownExtra) => {
-    return path.basename(getFileExtra(extra).path);
+    return getFileExtra(extra).path;
   };
 
   // register post delete handler to remove the s3 file object after item delete
@@ -204,7 +204,7 @@ const plugin: FastifyPluginAsync<GraaspPluginFileItemOptions> = async (
       const filepath = (await runner.runSingle(task)) as string;
 
       // update item copy's 'extra'
-      if (serviceMethod === FILE_METHODS.LOCAL) {
+      if (serviceMethod === ServiceMethod.LOCAL) {
         (item.extra as S3FileItemExtra).s3File.path = filepath;
       } else {
         (item.extra as FileItemExtra).file.path = filepath;

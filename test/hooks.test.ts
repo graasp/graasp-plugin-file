@@ -13,7 +13,7 @@ import {
   ROOT_PATH,
 } from './constants';
 import { mimetype, SIZES } from '../src/utils/constants';
-import { LocalService } from '../src/fileProviders/LocalService';
+import { LocalService } from '../src/fileProviders/localService';
 import { S3Provider } from '../src/fileProviders/s3Provider';
 import { createFsFolder } from '../src/utils/helpers';
 

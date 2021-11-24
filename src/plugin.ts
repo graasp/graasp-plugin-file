@@ -3,7 +3,7 @@ import { Actor, IdParam, Member, Task } from 'graasp';
 import fastifyMultipart from 'fastify-multipart';
 
 import FileTaskManager from './task-manager';
-import { AuthTokenSubject, FILE_METHODS } from './types';
+import { AuthTokenSubject, ServiceMethod } from './types';
 import { download, upload } from './schema';
 import {
   BuildFilePathFunction,
@@ -11,12 +11,12 @@ import {
   DownloadPostHookTasksFunction,
   UploadPreHookTasksFunction,
   UploadPostHookTasksFunction,
+  GraaspFileItemOptions,
+  GraaspS3FileItemOptions,
 } from './types';
-import { GraaspS3FileItemOptions } from 'graasp-plugin-s3-file-item';
-import { GraaspFileItemOptions } from 'graasp-plugin-file-item';
 
 export interface GraaspPluginFileOptions {
-  serviceMethod: FILE_METHODS; // S3 or local
+  serviceMethod: ServiceMethod; // S3 or local
 
   buildFilePath: BuildFilePathFunction;
 
@@ -95,43 +95,36 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
       const files = request.files();
 
       // TODO: upload one file at a time -> client who sends 5 requests?
-      let sequences: Task<Actor, unknown>[][] = [];
+      const sequences: Task<Actor, unknown>[][] = [];
 
       for await (const fileObject of files) {
         const { filename, mimetype } = fileObject;
         const file = await fileObject.toBuffer();
-
-        const prehookTasks = await uploadPreHookTasks?.(itemId, {
-          member,
-          token: authTokenSubject,
-        }) ?? [];
-
-        const tasks = fileTaskManager.createUploadFileTask(actor, {
-          itemId,
-          file,
-          filename,
-          mimetype,
-        });
-
         const size = Buffer.byteLength(file);
 
         const filepath = buildFilePath(itemId, filename);
-        const posthookTasks = await uploadPostHookTasks?.(
-          { file, filename, filepath, mimetype, size, itemId },
-          { member, token: authTokenSubject },
-        ) ?? [];
+
+        const prehookTasks =
+          (await uploadPreHookTasks?.(itemId, {
+            member,
+            token: authTokenSubject,
+          })) ?? [];
+
+        const tasks = fileTaskManager.createUploadFileTask(actor, {
+          file,
+          filename: filepath,
+          mimetype,
+        });
+
+        const posthookTasks =
+          (await uploadPostHookTasks?.(
+            { file, filename, filepath, mimetype, size, itemId },
+            { member, token: authTokenSubject },
+          )) ?? [];
 
         sequences.push([...prehookTasks, tasks, ...posthookTasks]);
       }
 
-      // count is the number of files uploaded
-      // WHAT IF ONE FAIL BUT NOT THE OTHER???
-      // const count = request.files.length;
-      // if (count === 1) {
-      //     reply.status(StatusCodes.CREATED);
-      // } else {
-      //     reply.status(StatusCodes.NO_CONTENT);
-      // }
       return runner.runMultipleSequences(sequences, log);
     },
   );
@@ -153,26 +146,28 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
       // TODO: check item type is plugin's itemType
       // The last task should return the downloaded Item
 
-      const prehookTasks = await downloadPreHookTasks?.(
-        { itemId, filename: size },
-        {
-          member,
-          token: authTokenSubject,
-        },
-      ) ?? [];
+      const prehookTasks =
+        (await downloadPreHookTasks?.(
+          { itemId, filename: size },
+          {
+            member,
+            token: authTokenSubject,
+          },
+        )) ?? [];
 
       const task = fileTaskManager.createDownloadFileTask(actor, {
         reply,
         itemId,
       });
       task.getInput = () => ({
-        filepath: prehookTasks[prehookTasks.length - 1].result,
+        filepath: prehookTasks[prehookTasks.length - 1].getResult(),
       });
 
-      const posthookTasks = await downloadPostHookTasks?.(itemId, {
-        member,
-        token: authTokenSubject,
-      }) ?? [];
+      const posthookTasks =
+        (await downloadPostHookTasks?.(itemId, {
+          member,
+          token: authTokenSubject,
+        })) ?? [];
 
       return await runner.runSingleSequence(
         [...prehookTasks, task, ...posthookTasks],

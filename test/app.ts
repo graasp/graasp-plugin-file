@@ -6,8 +6,19 @@ import {
   ItemTaskManager,
   TaskRunner,
 } from 'graasp-test';
-import plugin, { GraaspThumbnailsOptions } from '../src/index';
+import {
+  AuthTokenSubject,
+  BuildFilePathFunction,
+  DownloadPostHookTasksFunction,
+  DownloadPreHookTasksFunction,
+  ServiceMethod,
+  UploadPostHookTasksFunction,
+  UploadPreHookTasksFunction,
+} from '../src/types';
+
+import plugin from '../src/index';
 import { DISABLE_S3, GRAASP_ACTOR, ROOT_PATH, S3_OPTIONS } from './constants';
+import { GraaspPluginFileOptions } from '../src/plugin';
 
 const schemas = {
   $id: 'http://graasp.org/',
@@ -30,36 +41,21 @@ const schemas = {
 
 const build = async ({
   runner,
-  taskManager,
-  membership,
-  S3Options,
-  FSOptions,
   options,
 }: {
   runner: TaskRunner;
-  taskManager: ItemTaskManager;
-  membership: ItemMembershipTaskManager;
   S3Options?: GraaspS3FileItemOptions;
   FSOptions?: GraaspFileItemOptions;
-  options?: GraaspThumbnailsOptions;
+  LocalOptions?: GraaspFileItemOptions;
+
+  options: GraaspPluginFileOptions;
 }): Promise<FastifyInstance> => {
   const app = fastify();
   app.addSchema(schemas);
 
   app.decorateRequest('member', GRAASP_ACTOR);
   app.decorate('taskRunner', runner);
-  app.decorate('items', {
-    taskManager: taskManager,
-  });
-  app.decorate('itemMemberships', {
-    taskManager: membership,
-  });
-  app.decorate('fileItemPluginOptions', {
-    storageRootPath: FSOptions?.storageRootPath ?? ROOT_PATH,
-  });
-  app.decorate('s3FileItemPluginOptions', S3Options ?? S3_OPTIONS);
-
-  await app.register(plugin, options ?? DISABLE_S3);
+  await app.register(plugin, options);
 
   return app;
 };

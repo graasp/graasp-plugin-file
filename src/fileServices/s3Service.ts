@@ -1,6 +1,6 @@
 import S3 from 'aws-sdk/clients/s3';
 import contentDisposition from 'content-disposition';
-import { GraaspS3FileItemOptions } from 'graasp-plugin-s3-file-item';
+import { GraaspS3FileItemOptions } from '../types';
 import FileService from './interface/fileService';
 import { S3FileNotFound } from '../utils/errors';
 
@@ -126,7 +126,6 @@ export class S3Service implements FileService {
       .promise();
   }
 
-  // upload
   async uploadFile({
     fileBuffer,
     memberId,

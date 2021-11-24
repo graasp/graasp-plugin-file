@@ -4,7 +4,6 @@ import { BaseTask } from './base-task';
 import FileService from '../fileServices/interface/fileService';
 
 export type UploadFileInputType = {
-  itemId: string;
   file: Buffer;
   filename: string;
   mimetype: string;

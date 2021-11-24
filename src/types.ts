@@ -1,6 +1,7 @@
 import { Actor, Member, Task, UnknownExtra } from 'graasp';
+import S3 from 'aws-sdk/clients/s3';
 
-export enum FILE_METHODS {
+export enum ServiceMethod {
   S3,
   LOCAL,
 }
@@ -60,3 +61,20 @@ export type DownloadPostHookTasksFunction = (
   itemId: string,
   auth: { member: Member; token: AuthTokenSubject },
 ) => Promise<Task<Actor, unknown>[]>;
+
+export interface GraaspS3FileItemOptions {
+  s3Region: string;
+  s3Bucket: string;
+  s3AccessKeyId: string;
+  s3SecretAccessKey: string;
+  s3UseAccelerateEndpoint?: boolean;
+  s3Expiration?: number;
+  s3Instance?: S3;
+}
+
+export interface GraaspFileItemOptions {
+  /**
+   * Filesystem root path where the uploaded files will be saved
+  */
+  storageRootPath: string;
+}

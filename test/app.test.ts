@@ -11,7 +11,7 @@ import build from './app';
 import { THUMBNAIL_SIZES } from '../src/utils/constants';
 import { DISABLE_S3, GET_ITEM_ID, IMAGE_PATH } from './constants';
 import { mockcreateGetOfItemTaskSequence } from './mock';
-import { LocalService } from '../src/fileServices/LocalService';
+import { LocalService } from '../src/fileServices/localService';
 
 const taskManager = new ItemTaskManager();
 const runner = new TaskRunner();

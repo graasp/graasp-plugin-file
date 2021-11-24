@@ -2,15 +2,15 @@ import { Item } from 'graasp';
 import { FastifyPluginAsync } from 'fastify';
 import basePlugin from './plugin';
 import FileTaskManager from './task-manager';
-import { FILE_METHODS } from './types';
-import { GraaspFileItemOptions } from 'graasp-plugin-file-item';
+import { ServiceMethod } from './types';
+import { GraaspFileItemOptions } from './types';
 import { hash } from './utils/helpers';
 
 const APP_ITEM_TYPE = 'app';
 
 export interface GraaspPluginFileItemOptions {
   shouldLimit: boolean;
-  method: FILE_METHODS;
+  method: ServiceMethod;
 
   buildFilePath: (itemId: string, filename) => string;
 
