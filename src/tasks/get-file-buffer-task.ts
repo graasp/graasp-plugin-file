@@ -1,4 +1,4 @@
-import { Item, Actor, DatabaseTransactionHandler } from 'graasp';
+import { Actor, DatabaseTransactionHandler } from 'graasp';
 import type { FastifyLoggerInstance } from 'fastify';
 import { BaseTask } from './base-task';
 import FileService from '../fileServices/interface/fileService';
@@ -33,7 +33,9 @@ class GetFileBufferTask extends BaseTask<Buffer> {
     const { filename } = this.input;
 
     try {
-      this._result = await this.fileService.getFileBuffer({ filepath: filename });
+      this._result = await this.fileService.getFileBuffer({
+        filepath: filename,
+      });
     } catch (error) {
       log.error(error);
     }

@@ -1,11 +1,12 @@
-import { access, copyFile, mkdir, readFile, rm } from 'fs/promises';
-import { GraaspFileItemOptions } from '../types';
+import contentDisposition from 'content-disposition';
 import fs from 'fs';
 import path from 'path';
+import { access, copyFile, mkdir, readFile, rm } from 'fs/promises';
 import { Readable } from 'stream';
 import { pipeline } from 'stream/promises';
+
+import { GraaspFileItemOptions } from '../types';
 import FileService from './interface/fileService';
-import contentDisposition from 'content-disposition';
 import { FileNotFound } from '../utils/errors';
 
 export class LocalService implements FileService {
@@ -15,7 +16,8 @@ export class LocalService implements FileService {
     this.options = options;
   }
 
-  buildFullPath = (filepath: string) => `${this.options.storageRootPath}${filepath}`;
+  buildFullPath = (filepath: string) =>
+    `${this.options.storageRootPath}${filepath}`;
 
   // get file buffer, used for generating thumbnails
   async getFileBuffer({ filepath }): Promise<Buffer> {

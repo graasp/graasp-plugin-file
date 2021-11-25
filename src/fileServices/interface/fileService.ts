@@ -1,5 +1,6 @@
 import { FastifyReply } from 'fastify';
 import { ReadStream } from 'fs';
+
 export default interface FileService {
   copyFile(args: {
     newId: string;

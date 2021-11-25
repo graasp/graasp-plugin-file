@@ -73,8 +73,5 @@ export interface GraaspS3FileItemOptions {
 }
 
 export interface GraaspFileItemOptions {
-  /**
-   * Filesystem root path where the uploaded files will be saved
-  */
   storageRootPath: string;
 }

@@ -1,4 +1,3 @@
-// global
 import { FastifyLoggerInstance } from 'fastify';
 import {
   Task,

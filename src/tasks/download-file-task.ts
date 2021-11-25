@@ -43,7 +43,7 @@ class DownloadFileTask extends BaseTask<ReadStream> {
         reply,
         filepath,
         itemId,
-        mimetype
+        mimetype,
       })) || null;
 
     this.status = 'OK';

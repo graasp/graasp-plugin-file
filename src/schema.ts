@@ -16,8 +16,8 @@ const download = {
     type: 'object',
     properties: {
       size: {
-        enum: THUMBNAIL_SIZES.map(({ name }) => name),
-        default: THUMBNAIL_SIZES[0].name
+        enum: THUMBNAIL_SIZES,
+        default: THUMBNAIL_SIZES[0],
       },
     },
     required: ['size'],

@@ -1,5 +1,6 @@
 import S3 from 'aws-sdk/clients/s3';
 import contentDisposition from 'content-disposition';
+
 import { GraaspS3FileItemOptions } from '../types';
 import FileService from './interface/fileService';
 import { S3FileNotFound } from '../utils/errors';
@@ -149,56 +150,4 @@ export class S3Service implements FileService {
     // TO CHANGE: use signed url ? but difficult to set up callback
     await this.s3Instance.putObject(params).promise();
   }
-
-  /** UPLOAD FILE USING A SIGNED URL
-     * This is difficult to use, as we lose the trigger on upload 
-     * 
-     * const name = filename.substring(0, ORIGINAL_FILENAME_TRUNCATE_LIMIT);
-            const key = `${randomHexOf4()}/${randomHexOf4()}/${randomHexOf4()}-${Date.now()}`;
-
-            const itemData: Partial<Item<S3FileItemExtra>> = {
-                name,
-                type: S3_ITEM_TYPE,
-                extra: { s3File: { name: filename, key } },
-            };
-            // create item
-            const task = taskManager.createCreateTaskSequence(member, itemData, parentId);
-            const item = (await runner.runSingleSequence(task, log)) as Item;
-
-            // add member and item info to S3 object metadata
-            const metadata = { member: member.id, item: item.id };
-
-            const params = {
-                Bucket: bucket,
-                Key: key,
-                Expires: expiration,
-                Metadata: metadata,
-                // currently does not work. more info here: https://github.com/aws/aws-sdk-js/issues/1703
-                // the workaround is to do the upload (PUT) from the client with this request header.
-                // ContentDisposition: `attachment; filename="<filename>"`
-                // also does not work. should the client always send it when uploading the file?
-                // CacheControl: 'no-cache'
-            };
-
-            // request s3 signed url to upload file
-            try {
-                const uploadUrl = await s3.getSignedUrlPromise('uploadFile', params);
-                return { item, uploadUrl };
-            } catch (error) {
-                log.error(error, 'graasp-s3-file-item: failed to get signed url for upload');
-                throw error;
-            }
-
-                // metadata
-    fastify.get<{ Params: IdParam }> (
-    '/:id/s3-metadata',
-    { schema: getMetadataSchema },
-    async ({ member, params: { id }, log }) => {
-      const t1 = taskManager.createGetTaskSequence(member, id);
-      const t2 = S3FileItemTaskManager.createGetMetadataFromItemTask(member);
-      t2.getInput = () => ({ item: t1[0].result });
-      return runner.runSingleSequence([...t1, t2], log);
-    },
-  );
-     */
 }

@@ -49,7 +49,6 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
 ) => {
   const {
     serviceMethod,
-    // itemType,
     serviceOptions,
     buildFilePath,
     uploadPreHookTasks,
@@ -59,11 +58,6 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
   } = options;
 
   const { taskRunner: runner } = fastify;
-
-  // TODO: check parameters
-  // if (!region || !bucket || !accessKeyId || !secretAccessKey) {
-  //     throw new Error('graasp-s3-file-item: mandatory options missing');
-  // }
 
   fastify.register(fastifyMultipart, {
     limits: {
@@ -81,7 +75,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
   fastify.post<{ Querystring: IdParam }>(
     '/upload',
     { schema: upload },
-    async (request, reply) => {
+    async (request) => {
       const {
         member,
         authTokenSubject,
@@ -91,10 +85,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
 
       const actor = member || { id: authTokenSubject?.member };
 
-      // TODO: multiple ?
       const files = request.files();
-
-      // TODO: upload one file at a time -> client who sends 5 requests?
       const sequences: Task<Actor, unknown>[][] = [];
 
       for await (const fileObject of files) {
@@ -143,9 +134,6 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
 
       const actor = member || { id: authTokenSubject?.member };
 
-      // TODO: check item type is plugin's itemType
-      // The last task should return the downloaded Item
-
       const prehookTasks =
         (await downloadPreHookTasks?.(
           { itemId, filename: size },
@@ -176,30 +164,3 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
 };
 
 export default basePlugin;
-
-/**
- *
- * thumbnails: upload, create hooks, download
- * apps: upload, download, create hooks
- * file: upload, download -> this create an item
- *          s3: upload return a link -> apparently you could set up notifications
- *                  ---> or check headobject every x sec
- *          file: upload direct
- *
- *
- *
- * upload id: parent<<<-for creating this is for  OR item
- *          --> callback for creating item?
- *              so this plugin is for managing files but not the related item
- *              everything should be based on the buildPath
- *
- *  file: x/x/x/ -> saved in extra.file.path
- * s3File: x/x/x -> saved in extra.s3File.key
- * thumbnails: thumbnails/hash(id) -> not saved <-
- *
- *
- * thumbnails:
- *  register file (upload/download)
- *      upload prehook: generates THUMBNAIL_SIZES and upload each of them  using task manager
- *
- */
