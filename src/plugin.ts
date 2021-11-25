@@ -11,7 +11,7 @@ import {
   DownloadPostHookTasksFunction,
   UploadPreHookTasksFunction,
   UploadPostHookTasksFunction,
-  GraaspFileItemOptions,
+  GraaspLocalFileItemOptions,
   GraaspS3FileItemOptions,
 } from './types';
 
@@ -30,7 +30,7 @@ export interface GraaspPluginFileOptions {
 
   serviceOptions: {
     s3: GraaspS3FileItemOptions;
-    local: GraaspFileItemOptions;
+    local: GraaspLocalFileItemOptions;
   };
 }
 

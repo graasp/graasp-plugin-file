@@ -5,7 +5,7 @@ export enum ServiceMethod {
   S3,
   LOCAL,
 }
-export interface FileItemExtra extends UnknownExtra {
+export interface LocalFileItemExtra extends UnknownExtra {
   file: {
     name: string;
     path: string;
@@ -72,6 +72,6 @@ export interface GraaspS3FileItemOptions {
   s3Instance?: S3;
 }
 
-export interface GraaspFileItemOptions {
+export interface GraaspLocalFileItemOptions {
   storageRootPath: string;
 }
