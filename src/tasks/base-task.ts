@@ -23,6 +23,8 @@ export abstract class BaseTask<R> implements Task<Actor, R> {
   preHookHandler?: PreHookHandlerType<R>;
   postHookHandler?: PostHookHandlerType<R>;
 
+  getResult?: () => unknown;
+
   constructor(actor: Actor, fileService) {
     this.fileService = fileService;
     this.actor = actor;
@@ -36,8 +38,6 @@ export abstract class BaseTask<R> implements Task<Actor, R> {
   get message(): string {
     return this._message;
   }
-
-  getResult?: () => unknown;
 
   abstract run(
     handler: DatabaseTransactionHandler,

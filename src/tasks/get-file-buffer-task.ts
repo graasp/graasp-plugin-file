@@ -2,6 +2,7 @@ import { Actor, DatabaseTransactionHandler } from 'graasp';
 import type { FastifyLoggerInstance } from 'fastify';
 import { BaseTask } from './base-task';
 import FileService from '../fileServices/interface/fileService';
+import { GetFileBufferInvalidParameterError } from '../utils/errors';
 
 export type GetFileBufferInputType = {
   filename?: string;
@@ -32,13 +33,13 @@ class GetFileBufferTask extends BaseTask<Buffer> {
 
     const { filename } = this.input;
 
-    try {
-      this._result = await this.fileService.getFileBuffer({
-        filepath: filename,
-      });
-    } catch (error) {
-      log.error(error);
+    if (!filename) {
+      throw new GetFileBufferInvalidParameterError({ filename });
     }
+
+    this._result = await this.fileService.getFileBuffer({
+      filepath: filename,
+    });
 
     this.status = 'OK';
   }

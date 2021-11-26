@@ -51,7 +51,6 @@ class TaskManager {
   createDownloadFileTask(
     member: Actor,
     data: DownloadFileInputType,
-    size?: string,
   ): Task<Actor, unknown> {
     return new DownloadFileTask(member, this.fileService, data);
   }

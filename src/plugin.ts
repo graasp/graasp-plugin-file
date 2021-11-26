@@ -18,14 +18,20 @@ import {
 export interface GraaspPluginFileOptions {
   serviceMethod: ServiceMethod; // S3 or local
 
+  /** Function used to create the file path given an item id and a filename
+   * The path should NOT start with a /
+   */
   buildFilePath: BuildFilePathFunction;
 
   // use function as pre/post hook to avoid infinite loop with thumbnails
   uploadPreHookTasks?: UploadPreHookTasksFunction;
   uploadPostHookTasks?: UploadPostHookTasksFunction;
 
-  /** The last task should return a filepath */
-  downloadPreHookTasks?: DownloadPreHookTasksFunction;
+  /**
+   * Function building tasks running before downloading a file
+   * @return array of tasks. The last task should return a filepath
+   * */
+  downloadPreHookTasks: DownloadPreHookTasksFunction;
   downloadPostHookTasks?: DownloadPostHookTasksFunction;
 
   serviceOptions: {
@@ -58,6 +64,33 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
   } = options;
 
   const { taskRunner: runner } = fastify;
+
+  if (!buildFilePath || buildFilePath('itemId', 'filename').startsWith('/')) {
+    throw new Error('graasp-plugin-file: buildFilePath is not well defined');
+  }
+
+  if (
+    serviceMethod === ServiceMethod.LOCAL &&
+    (typeof serviceOptions?.local?.storageRootPath !== 'string' ||
+      serviceOptions?.local?.storageRootPath.endsWith('/'))
+  ) {
+    throw new Error(
+      'graasp-plugin-file: local service storageRootPath is malformed',
+    );
+  }
+
+  if (serviceMethod === ServiceMethod.S3) {
+    if (
+      !serviceOptions?.s3?.s3Region ||
+      !serviceOptions?.s3?.s3Bucket ||
+      !serviceOptions?.s3?.s3AccessKeyId ||
+      !serviceOptions?.s3?.s3SecretAccessKey
+    ) {
+      throw new Error(
+        'graasp-plugin-file: mandatory options for s3 service missing',
+      );
+    }
+  }
 
   fastify.register(fastifyMultipart, {
     limits: {
@@ -103,7 +136,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
 
         const tasks = fileTaskManager.createUploadFileTask(actor, {
           file,
-          filename: filepath,
+          filepath,
           mimetype,
         });
 
@@ -120,7 +153,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
     },
   );
 
-  fastify.get<{ Params: IdParam; Querystring: { size: string } }>(
+  fastify.get<{ Params: IdParam; Querystring: { size?: string } }>(
     '/:id/download',
     { schema: download },
     async (request, reply) => {
@@ -134,21 +167,20 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
 
       const actor = member || { id: authTokenSubject?.member };
 
-      const prehookTasks =
-        (await downloadPreHookTasks?.(
-          { itemId, filename: size },
-          {
-            member,
-            token: authTokenSubject,
-          },
-        )) ?? [];
+      const prehookTasks = await downloadPreHookTasks(
+        { itemId, filename: size },
+        {
+          member,
+          token: authTokenSubject,
+        },
+      );
 
       const task = fileTaskManager.createDownloadFileTask(actor, {
         reply,
         itemId,
       });
+      // get filepath and mimetype from last task
       task.getInput = () => prehookTasks[prehookTasks.length - 1].getResult();
-
       const posthookTasks =
         (await downloadPostHookTasks?.(itemId, {
           member,

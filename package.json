@@ -9,8 +9,9 @@
     "prepack": "yarn build",
     "prettier:check": "prettier --check \"{src,test}/**/*.ts\"",
     "prettier:write": "prettier --write \"{src,test}/**/*.ts\"",
-    "test": "jest test/basePlugin.test.ts --forceExit --coverage --verbose",
-    "test:watch": "yarn test -- --watchAll"
+    "test": "jest  --forceExit --coverage --verbose",
+    "test:watch": "yarn test --watchAll",
+    "lint": "eslint ."
   },
   "repository": {
     "type": "git",
@@ -35,6 +36,10 @@
     "@types/jest": "27.0.1",
     "@types/node": "16.11.1",
     "@types/sharp": "0.29.2",
+    "@typescript-eslint/eslint-plugin": "5.4.0",
+    "@typescript-eslint/parser": "5.4.0",
+    "eslint": "^7.13.0",
+    "eslint-config-prettier": "^8.3.0",
     "fastify": "3.8.0",
     "graasp-test": "github:graasp/graasp-test",
     "jest": "27.3.0",

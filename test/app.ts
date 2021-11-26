@@ -1,23 +1,6 @@
-import fastify, { FastifyInstance } from 'fastify';
-import { GraaspS3FileItemOptions, GraaspFileItemOptions } from '../src/types';
-import {
-  ItemMembershipTaskManager,
-  ItemTaskManager,
-  TaskRunner,
-} from 'graasp-test';
-import {
-  AuthTokenSubject,
-  BuildFilePathFunction,
-  DownloadPostHookTasksFunction,
-  DownloadPreHookTasksFunction,
-  ServiceMethod,
-  UploadPostHookTasksFunction,
-  UploadPreHookTasksFunction,
-} from '../src/types';
-
-import plugin from '../src/index';
-import { DISABLE_S3, GRAASP_ACTOR, ROOT_PATH, S3_OPTIONS } from './constants';
-import { GraaspPluginFileOptions } from '../src/plugin';
+import fastify from 'fastify';
+import { TaskRunner } from 'graasp-test';
+import plugin from '../src/plugin';
 
 const schemas = {
   $id: 'http://graasp.org/',
@@ -43,16 +26,11 @@ const build = async ({
   options,
 }: {
   runner: TaskRunner;
-  S3Options?: GraaspS3FileItemOptions;
-  FSOptions?: GraaspFileItemOptions;
-  LocalOptions?: GraaspFileItemOptions;
-
-  options: GraaspPluginFileOptions;
-}): Promise<FastifyInstance> => {
+  options?: any;
+}) => {
   const app = fastify();
   app.addSchema(schemas);
 
-  app.decorateRequest('member', GRAASP_ACTOR);
   app.decorate('taskRunner', runner);
   await app.register(plugin, options);
 

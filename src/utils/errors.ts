@@ -22,26 +22,74 @@ export class GraaspBaseError implements GraaspError {
   }
 }
 
-export class ThumbnailNotFound extends GraaspBaseError {
+export class UploadFileInvalidParameterError extends GraaspBaseError {
   constructor(data?: unknown) {
     super(
       {
-        code: 'GPTERR001',
-        statusCode: StatusCodes.NOT_FOUND,
-        message: 'Thumbnail not found',
+        code: 'GPFERR001',
+        statusCode: StatusCodes.BAD_REQUEST,
+        message: 'Upload parameters are invalid',
+      },
+      data,
+    );
+  }
+}
+export class CopyFileInvalidPathError extends GraaspBaseError {
+  constructor(filepath?: unknown) {
+    super(
+      {
+        code: 'GPFERR002',
+        statusCode: StatusCodes.BAD_REQUEST,
+        message: `Path '${filepath}' is invalid`,
+      },
+      filepath,
+    );
+  }
+}
+export class DeleteFileInvalidPathError extends GraaspBaseError {
+  constructor(filepath?: unknown) {
+    super(
+      {
+        code: 'GPFERR003',
+        statusCode: StatusCodes.BAD_REQUEST,
+        message: `Path '${filepath}' is invalid`,
+      },
+      filepath,
+    );
+  }
+}
+export class DeleteFolderInvalidPathError extends GraaspBaseError {
+  constructor(filepath?: unknown) {
+    super(
+      {
+        code: 'GPFERR004',
+        statusCode: StatusCodes.BAD_REQUEST,
+        message: `Path '${filepath}' is invalid`,
+      },
+      filepath,
+    );
+  }
+}
+export class DownloadFileInvalidParameterError extends GraaspBaseError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GPFERR005',
+        statusCode: StatusCodes.BAD_REQUEST,
+        message: 'Download parameters are invalid',
       },
       data,
     );
   }
 }
 
-export class FileNotFound extends GraaspBaseError {
+export class LocalFileNotFound extends GraaspBaseError {
   constructor(data?: unknown) {
     super(
       {
-        code: 'GPFERR001',
+        code: 'GPFERR005',
         statusCode: StatusCodes.NOT_FOUND,
-        message: 'File not found',
+        message: 'Local file not found',
       },
       data,
     );
@@ -52,9 +100,22 @@ export class S3FileNotFound extends GraaspBaseError {
   constructor(data?: unknown) {
     super(
       {
-        code: 'GPFERR001',
+        code: 'GPFERR006',
         statusCode: StatusCodes.NOT_FOUND,
-        message: 'File not found',
+        message: 'S3 file not found',
+      },
+      data,
+    );
+  }
+}
+
+export class GetFileBufferInvalidParameterError extends GraaspBaseError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GPFERR001',
+        statusCode: StatusCodes.BAD_REQUEST,
+        message: `Get file buffer parameters are invalid`,
       },
       data,
     );

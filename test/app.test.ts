@@ -1,247 +1,271 @@
 import FormData from 'form-data';
 import { createReadStream } from 'fs';
+import path from 'path';
 import { StatusCodes } from 'http-status-codes';
-import {
-  TaskRunner,
-  ItemTaskManager,
-  ItemMembershipTaskManager,
-} from 'graasp-test';
+import { TaskRunner, Task } from 'graasp-test';
 import { v4 } from 'uuid';
 import build from './app';
-import { THUMBNAIL_SIZES } from '../src/utils/constants';
-import { DISABLE_S3, GET_ITEM_ID, IMAGE_PATH } from './constants';
-import { mockcreateGetOfItemTaskSequence } from './mock';
-import { LocalService } from '../src/fileServices/localService';
+import {
+  TEXT_FILE_PATH,
+  DEFAULT_BUILD_FILE_PATH,
+  DEFAULT_S3_OPTIONS,
+  FILE_SERVICES,
+  buildDefaultLocalOptions,
+} from './fixtures';
+import { mockCreateDownloadFileTask, mockCreateUploadFileTask } from './mock';
+import { BuildFilePathFunction, ServiceMethod } from '../src/types';
 
-const taskManager = new ItemTaskManager();
 const runner = new TaskRunner();
-const membership = new ItemMembershipTaskManager();
 
-describe('Plugin Tests', () => {
-  describe('GET /thumbnails/:id', () => {
+const buildAppOptions = (
+  { serviceMethod, serviceOptions, buildFilePath },
+  {
+    uploadPreHookTasks = null,
+    uploadPostHookTasks = null,
+    downloadPreHookTasks = jest
+      .fn()
+      .mockResolvedValue([new Task({ some: 'value' })]),
+    downloadPostHookTasks = null,
+  } = {},
+) => ({
+  runner,
+  options: {
+    serviceMethod,
+    serviceOptions,
+    buildFilePath,
+    uploadPreHookTasks,
+    uploadPostHookTasks,
+    downloadPreHookTasks,
+    downloadPostHookTasks,
+  },
+});
+
+const buildLocalOptions = (
+  storageRootPath?: string,
+  buildFilePath?: BuildFilePathFunction,
+) => ({
+  serviceMethod: ServiceMethod.LOCAL,
+  serviceOptions: {
+    local: buildDefaultLocalOptions(storageRootPath),
+  },
+  buildFilePath: buildFilePath ?? DEFAULT_BUILD_FILE_PATH,
+});
+
+const buildS3Options = (
+  s3 = DEFAULT_S3_OPTIONS,
+  buildFilePath?: BuildFilePathFunction,
+) => ({
+  serviceMethod: ServiceMethod.S3,
+  serviceOptions: {
+    s3,
+  },
+  buildFilePath: buildFilePath ?? DEFAULT_BUILD_FILE_PATH,
+});
+
+const buildFileServiceOptions = (service) => {
+  if (service === ServiceMethod.LOCAL) {
+    return buildLocalOptions();
+  } else if (service === ServiceMethod.S3) {
+    return buildS3Options();
+  }
+  throw new Error('Service is not defined');
+};
+
+describe('Plugin File Base Tests', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+
+    jest
+      .spyOn(TaskRunner.prototype, 'runSingleSequence')
+      .mockImplementation(async (tasks) => {
+        return tasks[0]?.getResult();
+      });
+  });
+
+  describe('Options', () => {
     beforeEach(() => {
-      jest.clearAllMocks();
-      jest.spyOn(runner, 'setTaskPostHookHandler').mockReturnValue();
-      jest.spyOn(runner, 'setTaskPreHookHandler').mockReturnValue();
-
-      jest
-        .spyOn(TaskRunner.prototype, 'runSingleSequence')
-        .mockImplementation(async (tasks) => {
-          return tasks[0]?.getResult();
-        });
+      jest.spyOn(runner, 'setTaskPostHookHandler').mockImplementation(() => {});
+      jest.spyOn(runner, 'setTaskPreHookHandler').mockImplementation(() => {});
     });
 
-    it('Successfully download all different sizes', async () => {
-      const app = await build({
-        taskManager,
-        runner,
-        membership,
+    describe('Local', () => {
+      it('Valid options should resolve', async () => {
+        const app = await build(buildAppOptions(buildLocalOptions()));
+        expect(app).toBeTruthy();
+
+        const app1 = await build(buildAppOptions(buildLocalOptions('')));
+        expect(app1).toBeTruthy();
+
+        const app2 = await build(buildAppOptions(buildLocalOptions('hello')));
+        expect(app2).toBeTruthy();
+
+        const app3 = await build(buildAppOptions(buildLocalOptions('/hello')));
+        expect(app3).toBeTruthy();
       });
-
-      for (const { name } of THUMBNAIL_SIZES) {
-        const res = await app.inject({
-          method: 'GET',
-          url: `/thumbnails/${GET_ITEM_ID}?size=${name}`,
-        });
-
-        expect(res.statusCode).toBe(StatusCodes.OK);
-        expect(res.body).toBeTruthy();
-      }
-    });
-
-    it('Successfully download all different sizes with storage prefix', async () => {
-      const app = await build({
-        taskManager,
-        runner,
-        membership,
-        FSOptions: { storageRootPath: './test' },
-        options: { ...DISABLE_S3, pluginStoragePrefix: 'files' },
+      it('Invalid rootpath should throw', async () => {
+        expect(
+          async () => await build(buildAppOptions(buildLocalOptions('hello/'))),
+        ).rejects.toThrow(Error);
       });
-
-      for (const { name } of THUMBNAIL_SIZES) {
-        const res = await app.inject({
-          method: 'GET',
-          url: `/thumbnails/${GET_ITEM_ID}?size=${name}`,
-        });
-
-        expect(res.statusCode).toBe(StatusCodes.OK);
-        expect(res.body).toBeTruthy();
-      }
-    });
-
-    it("Can't download if doesn't have at least read rights", async () => {
-      const app = await build({
-        taskManager,
-        runner,
-        membership,
-        options: {
-          ...DISABLE_S3,
-          downloadValidation: async (id, member) =>
-            membership.createGetOfItemTaskSequence(member, id),
-        },
+      it('Invalid buildFilePath should throw', async () => {
+        expect(
+          async () =>
+            await build(buildAppOptions(buildLocalOptions('hello', () => '/'))),
+        ).rejects.toThrow(Error);
       });
-
-      const taskManagerError = 'MemberCannotReadItem';
-      mockcreateGetOfItemTaskSequence(new Error(taskManagerError), true);
-
-      for (const { name } of THUMBNAIL_SIZES) {
-        const res = await app.inject({
-          method: 'GET',
-          url: `/thumbnails/${GET_ITEM_ID}?size=${name}`,
-        });
-
-        expect(res.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
-        expect(res.json().message).toBe(taskManagerError);
-      }
-    });
-
-    it('Item without thumbnail should return 404', async () => {
-      const app = await build({
-        taskManager,
-        runner,
-        membership,
-      });
-
-      const id = v4();
-      for (const { name } of THUMBNAIL_SIZES) {
-        const res = await app.inject({
-          method: 'GET',
-          url: `/thumbnails/${id}?size=${name}`,
-        });
-
-        expect(res.statusCode).toBe(StatusCodes.NOT_FOUND);
-      }
-    });
-
-    it("Can't download non existent item", async () => {
-      const app = await build({
-        taskManager,
-        runner,
-        membership,
-        options: {
-          ...DISABLE_S3,
-          downloadValidation: async (id, member) =>
-            membership.createGetOfItemTaskSequence(member, id),
-        },
-      });
-
-      const taskManagerError = 'ItemNotFound';
-      mockcreateGetOfItemTaskSequence(new Error(taskManagerError), true);
-
-      for (const { name } of THUMBNAIL_SIZES) {
-        const res = await app.inject({
-          method: 'GET',
-          url: `/thumbnails/${GET_ITEM_ID}?size=${name}`,
-        });
-
-        expect(res.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
-        expect(res.json().message).toBe(taskManagerError);
-      }
     });
   });
 
-  describe('POST /thumbnails/:id', () => {
+  describe('POST /upload', () => {
     beforeEach(() => {
       jest.clearAllMocks();
-      jest.spyOn(runner, 'setTaskPostHookHandler').mockReturnValue();
-      jest.spyOn(runner, 'setTaskPreHookHandler').mockReturnValue();
 
       jest
-        .spyOn(TaskRunner.prototype, 'runSingleSequence')
-        .mockImplementation(async (tasks) => {
-          return tasks[0]?.getResult();
+        .spyOn(runner, 'runMultipleSequences')
+        .mockImplementation(async (sequences) => {
+          return sequences;
         });
     });
 
-    it('Successfully upload thumbnail', async () => {
-      const put = jest.spyOn(LocalService.prototype, 'uploadFile');
-      const app = await build({
-        taskManager,
-        runner,
-        membership,
-      });
+    it.each(FILE_SERVICES)(
+      '%s : Successfully upload a file',
+      async (service) => {
+        const app = await build(
+          buildAppOptions(buildFileServiceOptions(service)),
+        );
+        const mock = mockCreateUploadFileTask(true);
 
-      const form = new FormData();
-      form.append('file', createReadStream(IMAGE_PATH));
+        const form = new FormData();
+        form.append('file', createReadStream(TEXT_FILE_PATH));
 
-      const response = await app.inject({
-        method: 'POST',
-        url: `/thumbnails/${GET_ITEM_ID}`,
-        payload: form,
-        headers: form.getHeaders(),
-      });
+        const response = await app.inject({
+          method: 'POST',
+          url: '/upload',
+          payload: form,
+          headers: form.getHeaders(),
+        });
 
-      expect(response.body).toBeFalsy();
-      expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
-      expect(put).toBeCalledTimes(Object.entries(THUMBNAIL_SIZES).length);
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        // run as many sequences as uploaded files
+        expect((await response.json()).length).toEqual(1);
+        expect(mock).toHaveBeenCalledTimes(1);
+      },
+    );
+
+    it.each(FILE_SERVICES)(
+      '%s : Successfully upload multiple files',
+      async (service) => {
+        const app = await build(
+          buildAppOptions(buildFileServiceOptions(service)),
+        );
+        const mock = mockCreateUploadFileTask(true);
+
+        const form = new FormData();
+        const filepath = path.resolve(__dirname, '../', TEXT_FILE_PATH);
+        form.append('file', createReadStream(filepath));
+        form.append('file', createReadStream(filepath));
+
+        const response = await app.inject({
+          method: 'POST',
+          url: '/upload',
+          payload: form,
+          headers: form.getHeaders(),
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        // run as many sequences as uploaded files
+        expect((await response.json()).length).toEqual(2);
+        expect(mock).toHaveBeenCalledTimes(2);
+      },
+    );
+
+    it.each(FILE_SERVICES)(
+      '%s : Run upload pre- and posthooks when defined',
+      async (service) => {
+        const uploadPreHookTasks = jest.fn();
+        const uploadPostHookTasks = jest.fn();
+
+        const app = await build(
+          buildAppOptions(buildFileServiceOptions(service), {
+            uploadPreHookTasks,
+            uploadPostHookTasks,
+          }),
+        );
+        const mock = mockCreateUploadFileTask(true);
+
+        const form = new FormData();
+        form.append('file', createReadStream(TEXT_FILE_PATH));
+
+        const response = await app.inject({
+          method: 'POST',
+          url: '/upload',
+          payload: form,
+          headers: form.getHeaders(),
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        // run as many sequences as uploaded files
+        expect((await response.json()).length).toEqual(1);
+        expect(mock).toHaveBeenCalledTimes(1);
+        expect(uploadPreHookTasks).toHaveBeenCalledTimes(1);
+        expect(uploadPostHookTasks).toHaveBeenCalledTimes(1);
+      },
+    );
+  });
+
+  describe('POST /:id/download', () => {
+    beforeEach(() => {
+      jest
+        .spyOn(runner, 'runSingleSequence')
+        .mockImplementation(async (sequence) => {
+          return sequence;
+        });
     });
 
-    it('Successfully upload thumbnail with storage prefix', async () => {
-      const put = jest.spyOn(LocalService.prototype, 'uploadFile');
-      const app = await build({
-        taskManager,
-        runner,
-        membership,
-        FSOptions: { storageRootPath: './test' },
-        options: { ...DISABLE_S3, pluginStoragePrefix: 'files' },
+    it.each(FILE_SERVICES)('Successfully download a file', async (service) => {
+      const mock = mockCreateDownloadFileTask(true);
+
+      const app = await build(
+        buildAppOptions(buildFileServiceOptions(service)),
+      );
+
+      const id = v4();
+      const res = await app.inject({
+        method: 'GET',
+        url: `/${id}/download`,
       });
 
-      const form = new FormData();
-      form.append('file', createReadStream(IMAGE_PATH));
-
-      const response = await app.inject({
-        method: 'POST',
-        url: `/thumbnails/${GET_ITEM_ID}`,
-        payload: form,
-        headers: form.getHeaders(),
-      });
-
-      expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
-      expect(put).toBeCalledTimes(Object.entries(THUMBNAIL_SIZES).length);
+      expect(res.statusCode).toBe(StatusCodes.OK);
+      expect(mock).toHaveBeenCalledTimes(1);
     });
 
-    it("Can't upload f doesn't have at least write rights", async () => {
-      const app = await build({
-        taskManager,
-        runner,
-        membership,
-        options: {
-          ...DISABLE_S3,
-          uploadValidation: async (id, member) =>
-            membership.createGetOfItemTaskSequence(member, id),
-        },
+    it.each(FILE_SERVICES)('Run upload pre- and posthooks', async (service) => {
+      const downloadPreHookTasks = jest
+        .fn()
+        .mockResolvedValue([new Task({ some: 'value' })]);
+      const downloadPostHookTasks = jest
+        .fn()
+        .mockResolvedValue([new Task({ some: 'value' })]);
+
+      const app = await build(
+        buildAppOptions(buildFileServiceOptions(service), {
+          downloadPreHookTasks,
+          downloadPostHookTasks,
+        }),
+      );
+      const mock = mockCreateDownloadFileTask(true);
+
+      const id = v4();
+
+      const res = await app.inject({
+        method: 'GET',
+        url: `/${id}/download`,
       });
 
-      const taskManagerError = 'MemberCannotWriteItem';
-      mockcreateGetOfItemTaskSequence(new Error(taskManagerError), true);
-
-      const form = new FormData();
-      form.append('file', createReadStream(IMAGE_PATH));
-
-      const response = await app.inject({
-        method: 'POST',
-        url: `/thumbnails/${GET_ITEM_ID}`,
-        payload: form,
-        headers: form.getHeaders(),
-      });
-
-      expect(response.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
-      expect(response.json().message).toBe(taskManagerError);
-    });
-
-    it('Upload without files should fail', async () => {
-      const app = await build({
-        taskManager,
-        runner,
-        membership,
-      });
-
-      const response = await app.inject({
-        method: 'POST',
-        url: `/thumbnails/${GET_ITEM_ID}`,
-      });
-
-      expect(response.statusCode).toBe(StatusCodes.NOT_ACCEPTABLE);
+      expect(res.statusCode).toBe(StatusCodes.OK);
+      expect(mock).toHaveBeenCalledTimes(1);
+      expect(downloadPreHookTasks).toHaveBeenCalledTimes(1);
+      expect(downloadPostHookTasks).toHaveBeenCalledTimes(1);
     });
   });
 });

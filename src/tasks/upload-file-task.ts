@@ -2,10 +2,11 @@ import { Item, Actor, DatabaseTransactionHandler } from 'graasp';
 import type { FastifyLoggerInstance } from 'fastify';
 import { BaseTask } from './base-task';
 import FileService from '../fileServices/interface/fileService';
+import { UploadFileInvalidParameterError } from '../utils/errors';
 
 export type UploadFileInputType = {
   file: Buffer;
-  filename: string;
+  filepath: string;
   mimetype: string;
 };
 
@@ -32,11 +33,25 @@ class UploadFileTask extends BaseTask<Item | void> {
   ): Promise<void> {
     this.status = 'RUNNING';
 
-    const { file, mimetype, filename } = this.input;
+    const { file, mimetype, filepath } = this.input;
+
+    if (!filepath) {
+      throw new UploadFileInvalidParameterError({
+        filepath,
+        fileSize: file.byteLength,
+      });
+    }
+
+    if (!file.byteLength) {
+      throw new UploadFileInvalidParameterError({
+        filepath,
+        fileSize: file.byteLength,
+      });
+    }
 
     await this.fileService.uploadFile({
       fileBuffer: file,
-      filepath: filename,
+      filepath,
       memberId: this.actor.id,
       mimetype,
     });

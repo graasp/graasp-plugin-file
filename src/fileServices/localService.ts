@@ -7,7 +7,7 @@ import { pipeline } from 'stream/promises';
 
 import { GraaspLocalFileItemOptions } from '../types';
 import FileService from './interface/fileService';
-import { FileNotFound } from '../utils/errors';
+import { LocalFileNotFound } from '../utils/errors';
 
 export class LocalService implements FileService {
   private readonly options: GraaspLocalFileItemOptions;
@@ -17,31 +17,7 @@ export class LocalService implements FileService {
   }
 
   buildFullPath = (filepath: string) =>
-    `${this.options.storageRootPath}${filepath}`;
-
-  // get file buffer, used for generating thumbnails
-  async getFileBuffer({ filepath }): Promise<Buffer> {
-    return await readFile(this.buildFullPath(filepath));
-  }
-
-  async downloadFile({ reply, filepath, itemId, mimetype }) {
-    // ensure the file exists, if not throw error
-    try {
-      await access(this.buildFullPath(filepath));
-    } catch (e) {
-      if (e.code === 'ENOENT') {
-        throw new FileNotFound({ itemId, filepath });
-      }
-      throw e;
-    }
-
-    // Get thumbnail path
-    reply.type(mimetype);
-    // this header will make the browser download the file with 'name'
-    // instead of simply opening it and showing it
-    reply.header('Content-Disposition', contentDisposition(itemId));
-    return fs.createReadStream(this.buildFullPath(filepath));
-  }
+    `${this.options.storageRootPath}/${filepath}`;
 
   // copy
   async copyFile({ originalPath, newFilePath }) {
@@ -62,6 +38,37 @@ export class LocalService implements FileService {
   // delete
   async deleteFolder({ folderPath }): Promise<void> {
     await rm(this.buildFullPath(folderPath), { recursive: true });
+  }
+
+  async downloadFile({ reply, filepath, itemId, mimetype }) {
+    // ensure the file exists, if not throw error
+    try {
+      await access(this.buildFullPath(filepath));
+    } catch (e) {
+      if (e.code === 'ENOENT') {
+        throw new LocalFileNotFound({ itemId, filepath });
+      }
+      throw e;
+    }
+
+    // Get thumbnail path
+    reply.type(mimetype);
+    // this header will make the browser download the file with 'name'
+    // instead of simply opening it and showing it
+    reply.header('Content-Disposition', contentDisposition(itemId));
+    return fs.createReadStream(this.buildFullPath(filepath));
+  }
+
+  // get file buffer, used for generating thumbnails
+  async getFileBuffer({ filepath }): Promise<Buffer> {
+    try {
+      return await readFile(this.buildFullPath(filepath));
+    } catch (e) {
+      if (e.code === 'ENOENT') {
+        throw new LocalFileNotFound({ filepath });
+      }
+      throw e;
+    }
   }
 
   // upload

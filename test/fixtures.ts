@@ -1,4 +1,6 @@
 import { Actor, Item, Member, Task } from 'graasp';
+import path from 'path/posix';
+import { ServiceMethod } from '../src';
 export const ROOT_PATH = './test/files';
 export const IMAGE_PATH = './test/files/image.jpeg';
 
@@ -22,15 +24,9 @@ export const GRAASP_ACTOR: Actor = {
 export const ENABLE_S3 = {
   enableS3FileItemPlugin: true,
   pluginStoragePrefix: '',
-  uploadValidation: async (
-    id: string,
-    member: Member,
-  ): Promise<Task<Member, unknown>[]> => [],
+  uploadValidation: async (): Promise<Task<Member, unknown>[]> => [],
 
-  downloadValidation: async (
-    id: string,
-    member: Member,
-  ): Promise<Task<Member, unknown>[]> => [],
+  downloadValidation: async (): Promise<Task<Member, unknown>[]> => [],
   prefix: '/thumbnails',
 };
 
@@ -38,22 +34,27 @@ export const DISABLE_S3 = {
   enableS3FileItemPlugin: false,
   pluginStoragePrefix: '',
 
-  uploadValidation: async (
-    id: string,
-    member: Member,
-  ): Promise<Task<Member, unknown>[]> => [],
+  uploadValidation: async (): Promise<Task<Member, unknown>[]> => [],
 
-  downloadValidation: async (
-    id: string,
-    member: Member,
-  ): Promise<Task<Member, unknown>[]> => [],
+  downloadValidation: async (): Promise<Task<Member, unknown>[]> => [],
   prefix: '/thumbnails',
 };
 
-export const S3_OPTIONS = {
+export const DEFAULT_S3_OPTIONS = {
   s3Region: 'string',
   s3Bucket: 'string',
   s3AccessKeyId: 'string',
   s3SecretAccessKey: 'string',
   s3UseAccelerateEndpoint: false,
 };
+
+export const TEXT_FILE_PATH = 'test/files/1.txt';
+
+export const DEFAULT_BUILD_FILE_PATH = (itemId, filename) =>
+  `${itemId}/${filename}`;
+
+export const buildDefaultLocalOptions = (storageRootPath?: string) => ({
+  storageRootPath: storageRootPath ?? path.resolve(__dirname, './tmp'),
+});
+
+export const FILE_SERVICES = [ServiceMethod.LOCAL, ServiceMethod.S3];

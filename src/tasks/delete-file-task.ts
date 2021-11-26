@@ -2,6 +2,7 @@ import { Item, Actor, DatabaseTransactionHandler } from 'graasp';
 import type { FastifyLoggerInstance } from 'fastify';
 import { BaseTask } from './base-task';
 import FileService from '../fileServices/interface/fileService';
+import { DeleteFileInvalidPathError } from '../utils/errors';
 
 export type DeleteFileInputType = {
   filepath?: string;
@@ -32,11 +33,11 @@ class DeleteFileTask extends BaseTask<Item | void> {
 
     const { filepath } = this.input;
 
-    try {
-      await this.fileService.deleteFile({ filepath });
-    } catch (error) {
-      log.error(error);
+    if (!filepath) {
+      throw new DeleteFileInvalidPathError(filepath);
     }
+
+    await this.fileService.deleteFile({ filepath });
 
     this.status = 'OK';
   }

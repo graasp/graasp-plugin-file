@@ -1,5 +1,6 @@
 import { Item } from 'graasp';
 import { ItemMembershipTaskManager, TaskRunner, Task } from 'graasp-test';
+import TaskManager from '../src/task-manager';
 
 export const mockcreateGetOfItemTaskSequence = (
   data: Partial<Item> | Error,
@@ -17,4 +18,26 @@ export const mockcreateGetOfItemTaskSequence = (
       return data;
     });
   return mockCreateTask;
+};
+
+export const mockCreateUploadFileTask = (
+  data: boolean | Error,
+): jest.SpyInstance => {
+  const mockTask = jest
+    .spyOn(TaskManager.prototype, 'createUploadFileTask')
+    .mockImplementation(() => {
+      return new Task(data);
+    });
+  return mockTask;
+};
+
+export const mockCreateDownloadFileTask = (
+  data: boolean | Error,
+): jest.SpyInstance => {
+  const mockTask = jest
+    .spyOn(TaskManager.prototype, 'createDownloadFileTask')
+    .mockImplementation(() => {
+      return new Task(data);
+    });
+  return mockTask;
 };

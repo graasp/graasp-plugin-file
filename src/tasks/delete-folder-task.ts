@@ -1,6 +1,7 @@
 import { Item, Actor, DatabaseTransactionHandler } from 'graasp';
 import type { FastifyLoggerInstance } from 'fastify';
 import { BaseTask } from './base-task';
+import { DeleteFolderInvalidPathError } from '../utils/errors';
 
 export type DeleteFolderInputType = {
   folderPath?: string;
@@ -27,11 +28,11 @@ class DeleteFolderTask extends BaseTask<Item | void> {
 
     const { folderPath } = this.input;
 
-    try {
-      await this.fileService.deleteFolder({ folderPath });
-    } catch (error) {
-      log.error(error);
+    if (!folderPath) {
+      throw new DeleteFolderInvalidPathError(folderPath);
     }
+
+    await this.fileService.deleteFolder({ folderPath });
 
     this.status = 'OK';
   }

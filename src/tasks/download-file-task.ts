@@ -3,6 +3,7 @@ import { ReadStream } from 'fs';
 import type { FastifyLoggerInstance, FastifyReply } from 'fastify';
 import { BaseTask } from './base-task';
 import FileService from '../fileServices/interface/fileService';
+import { DownloadFileInvalidParameterError } from '../utils/errors';
 
 export type DownloadFileInputType = {
   reply?: FastifyReply;
@@ -35,6 +36,14 @@ class DownloadFileTask extends BaseTask<ReadStream> {
     this.status = 'RUNNING';
 
     const { reply, itemId, filepath, mimetype } = this.input;
+
+    if (!filepath || !itemId) {
+      throw new DownloadFileInvalidParameterError({
+        itemId,
+        filepath,
+        mimetype,
+      });
+    }
 
     // last task should return item
     // s3 returns null and redirect
