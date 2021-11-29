@@ -23,6 +23,8 @@ export interface S3FileItemExtra extends UnknownExtra {
   };
 }
 
+export type FileItemExtra = S3FileItemExtra | LocalFileItemExtra;
+
 export type BuildFilePathFunction = (
   itemId: string,
   filename: string,
@@ -36,7 +38,7 @@ export type AuthTokenSubject = {
 };
 
 export type UploadPreHookTasksFunction = (
-  parentId: string,
+  data: { parentId: string, mimetype: string },
   auth: { member: Member; token: AuthTokenSubject },
 ) => Promise<Task<Actor, unknown>[]>;
 

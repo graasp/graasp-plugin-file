@@ -125,7 +125,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
         const filepath = buildFilePath(itemId, filename);
 
         const prehookTasks =
-          (await uploadPreHookTasks?.(itemId, {
+          (await uploadPreHookTasks?.({ parentId: itemId, mimetype }, {
             member,
             token: authTokenSubject,
           })) ?? [];
