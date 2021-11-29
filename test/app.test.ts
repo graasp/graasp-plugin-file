@@ -93,13 +93,13 @@ describe('Plugin File Base Tests', () => {
         const app = await build(buildAppOptions(buildLocalOptions()));
         expect(app).toBeTruthy();
 
-        const app1 = await build(buildAppOptions(buildLocalOptions('')));
+        const app1 = await build(buildAppOptions(buildLocalOptions('/')));
         expect(app1).toBeTruthy();
 
-        const app2 = await build(buildAppOptions(buildLocalOptions('hello')));
+        const app2 = await build(buildAppOptions(buildLocalOptions('/hello')));
         expect(app2).toBeTruthy();
 
-        const app3 = await build(buildAppOptions(buildLocalOptions('/hello')));
+        const app3 = await build(buildAppOptions(buildLocalOptions('/hello/')));
         expect(app3).toBeTruthy();
       });
       it('Invalid rootpath should throw', async () => {

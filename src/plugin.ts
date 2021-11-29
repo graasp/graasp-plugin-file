@@ -69,11 +69,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
     throw new Error('graasp-plugin-file: buildFilePath is not well defined');
   }
 
-  if (
-    serviceMethod === ServiceMethod.LOCAL &&
-    (typeof serviceOptions?.local?.storageRootPath !== 'string' ||
-      serviceOptions?.local?.storageRootPath.endsWith('/'))
-  ) {
+  if (serviceMethod === ServiceMethod.LOCAL && !serviceOptions?.local?.storageRootPath.startsWith('/')) {
     throw new Error(
       'graasp-plugin-file: local service storageRootPath is malformed',
     );

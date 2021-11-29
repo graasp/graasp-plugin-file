@@ -73,8 +73,5 @@ export interface GraaspS3FileItemOptions {
 }
 
 export interface GraaspLocalFileItemOptions {
-  /**
-   * {string} root path for file paths. It should NOT end with a /
-   */
   storageRootPath: string;
 }
