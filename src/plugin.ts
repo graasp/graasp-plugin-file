@@ -65,8 +65,8 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
 
   const { taskRunner: runner } = fastify;
 
-  if (!buildFilePath || buildFilePath('itemId', 'filename').startsWith('/')) {
-    throw new Error('graasp-plugin-file: buildFilePath is not well defined');
+  if (!buildFilePath){
+    throw new Error('graasp-plugin-file: buildFilePath is not defined');
   }
 
   if (serviceMethod === ServiceMethod.LOCAL && !serviceOptions?.local?.storageRootPath.startsWith('/')) {
@@ -76,6 +76,10 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
   }
 
   if (serviceMethod === ServiceMethod.S3) {
+    if(buildFilePath('itemId', 'filename').startsWith('/')) {
+      throw new Error('graasp-plugin-file: buildFilePath is not well defined');
+    }
+
     if (
       !serviceOptions?.s3?.s3Region ||
       !serviceOptions?.s3?.s3Bucket ||
