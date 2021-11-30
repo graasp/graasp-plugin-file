@@ -70,7 +70,6 @@ class TaskManager {
   }
 
   createCopyFileTask(member: Actor, data: CopyInputType): Task<Actor, unknown> {
-    // new filename is new item id
     return new CopyFileTask(member, this.fileService, data);
   }
 
@@ -78,7 +77,6 @@ class TaskManager {
     member: Actor,
     data: GetFileBufferInputType,
   ): Task<Actor, unknown> {
-    // new filename is new item id
     return new GetFileBufferTask(member, this.fileService, data);
   }
 }

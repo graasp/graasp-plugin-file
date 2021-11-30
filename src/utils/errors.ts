@@ -87,7 +87,7 @@ export class LocalFileNotFound extends GraaspBaseError {
   constructor(data?: unknown) {
     super(
       {
-        code: 'GPFERR005',
+        code: 'GPFERR006',
         statusCode: StatusCodes.NOT_FOUND,
         message: 'Local file not found',
       },
@@ -100,7 +100,7 @@ export class S3FileNotFound extends GraaspBaseError {
   constructor(data?: unknown) {
     super(
       {
-        code: 'GPFERR006',
+        code: 'GPFERR007',
         statusCode: StatusCodes.NOT_FOUND,
         message: 'S3 file not found',
       },
@@ -113,9 +113,9 @@ export class GetFileBufferInvalidParameterError extends GraaspBaseError {
   constructor(data?: unknown) {
     super(
       {
-        code: 'GPFERR001',
+        code: 'GPFERR008',
         statusCode: StatusCodes.BAD_REQUEST,
-        message: `Get file buffer parameters are invalid`,
+        message: 'Get file buffer parameters are invalid',
       },
       data,
     );
