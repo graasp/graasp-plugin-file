@@ -105,6 +105,8 @@ export class S3Service implements FileService {
 
       // Redirect to url, TODO: Change for something better
       reply.removeHeader('Access-Control-Allow-Credentials');
+      reply.removeHeader('set-cookie');
+      reply.removeHeader('Cookie');
       reply.redirect(
         `https://${bucket}.s3.${region}.amazonaws.com/${filepath}`,
       );
