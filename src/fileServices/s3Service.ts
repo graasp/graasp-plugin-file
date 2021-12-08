@@ -103,11 +103,15 @@ export class S3Service implements FileService {
       // check whether file exists
       await this.getMetadata(filepath);
 
+      const param = {
+        Bucket: bucket,
+        Key: filepath,
+        Expires: 60,
+      }
+
       // Redirect to url, TODO: Change for something better
       reply.header('Access-Control-Allow-Credentials', 'true');
-      reply.redirect(
-        `https://${bucket}.s3.${region}.amazonaws.com/${filepath}`,
-      );
+      reply.redirect(await this.s3Instance.getSignedUrlPromise('getObject', param));
     } catch (e) {
       if (e.statusCode === StatusCodes.NOT_FOUND) {
         throw new S3FileNotFound({ filepath, itemId });
