@@ -5,6 +5,7 @@ import { GraaspS3FileItemOptions } from '../types';
 import FileService from './interface/fileService';
 import { S3FileNotFound } from '../utils/errors';
 import { StatusCodes } from 'http-status-codes';
+import { S3_PRESIGNED_EXPIRATION } from '../utils/constants';
 
 export class S3Service implements FileService {
   private readonly options: GraaspS3FileItemOptions;
@@ -106,10 +107,13 @@ export class S3Service implements FileService {
       const param = {
         Bucket: bucket,
         Key: filepath,
-        Expires: 60,
+        Expires: S3_PRESIGNED_EXPIRATION,
       }
 
-      // Redirect to url, TODO: Change for something better
+      // Redirect to the object presigned url
+      // It is necessary to add the header manually, because the redirect sends the request and 
+      // when the fastify-cors plugin try to add the header it's already sent and can't add it.
+      // So we add it because otherwise the browser won't send the cookie
       reply.header('Access-Control-Allow-Credentials', 'true');
       reply.redirect(await this.s3Instance.getSignedUrlPromise('getObject', param));
     } catch (e) {

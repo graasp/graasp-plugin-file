@@ -4,3 +4,5 @@ export const LARGE = 'large';
 export const ORIGINAL = 'original';
 
 export const THUMBNAIL_SIZES = [SMALL, MEDIUM, LARGE, ORIGINAL];
+
+export const S3_PRESIGNED_EXPIRATION = 60; // default 60s
