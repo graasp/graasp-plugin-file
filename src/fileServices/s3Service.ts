@@ -41,7 +41,7 @@ export class S3Service implements FileService {
     const { s3Bucket: bucket } = this.options;
 
     const params = {
-      CopySource: originalPath,
+      CopySource: `${bucket}/${originalPath}`,
       Bucket: bucket,
       Key: newFilePath,
       Metadata: {
