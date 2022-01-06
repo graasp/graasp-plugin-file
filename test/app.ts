@@ -1,6 +1,6 @@
 import fastify from 'fastify';
 import { TaskRunner } from 'graasp-test';
-import plugin from '../src/plugin';
+import plugin, { GraaspPluginFileOptions } from '../src/plugin';
 
 const schemas = {
   $id: 'http://graasp.org/',
@@ -26,7 +26,7 @@ const build = async ({
   options,
 }: {
   runner: TaskRunner;
-  options?: any;
+  options?: GraaspPluginFileOptions;
 }) => {
   const app = fastify();
   app.addSchema(schemas);

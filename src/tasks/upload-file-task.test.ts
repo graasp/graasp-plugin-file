@@ -78,7 +78,7 @@ describe('Upload File Task', () => {
   });
 
   describe('Local', () => {
-    it(`Upload file at storagepath/filepath`, async () => {
+    it('Upload file at storagepath/filepath', async () => {
       const input = buildInput();
 
       const task = new UploadFileTask(actor, localService, input);
@@ -95,7 +95,7 @@ describe('Upload File Task', () => {
   });
 
   describe('S3', () => {
-    it(`Upload file at storagepath/filepath`, async () => {
+    it('Upload file at storagepath/filepath', async () => {
       const input = buildInput();
       s3Instance.putObject = jest
         .fn()

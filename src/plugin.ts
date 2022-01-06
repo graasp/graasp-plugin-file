@@ -65,18 +65,21 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
 
   const { taskRunner: runner } = fastify;
 
-  if (!buildFilePath){
+  if (!buildFilePath) {
     throw new Error('graasp-plugin-file: buildFilePath is not defined');
   }
 
-  if (serviceMethod === ServiceMethod.LOCAL && !serviceOptions?.local?.storageRootPath.startsWith('/')) {
+  if (
+    serviceMethod === ServiceMethod.LOCAL &&
+    !serviceOptions?.local?.storageRootPath.startsWith('/')
+  ) {
     throw new Error(
       'graasp-plugin-file: local service storageRootPath is malformed',
     );
   }
 
   if (serviceMethod === ServiceMethod.S3) {
-    if(buildFilePath('itemId', 'filename').startsWith('/')) {
+    if (buildFilePath('itemId', 'filename').startsWith('/')) {
       throw new Error('graasp-plugin-file: buildFilePath is not well defined');
     }
 
@@ -129,10 +132,13 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
         const filepath = buildFilePath(itemId, filename);
 
         const prehookTasks =
-          (await uploadPreHookTasks?.({ parentId: itemId, mimetype }, {
-            member,
-            token: authTokenSubject,
-          })) ?? [];
+          (await uploadPreHookTasks?.(
+            { parentId: itemId, mimetype },
+            {
+              member,
+              token: authTokenSubject,
+            },
+          )) ?? [];
 
         const tasks = fileTaskManager.createUploadFileTask(actor, {
           file,

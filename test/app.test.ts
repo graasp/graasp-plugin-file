@@ -84,8 +84,12 @@ describe('Plugin File Base Tests', () => {
 
   describe('Options', () => {
     beforeEach(() => {
-      jest.spyOn(runner, 'setTaskPostHookHandler').mockImplementation(() => {});
-      jest.spyOn(runner, 'setTaskPreHookHandler').mockImplementation(() => {});
+      jest.spyOn(runner, 'setTaskPostHookHandler').mockImplementation(() => {
+        // do nothing
+      });
+      jest.spyOn(runner, 'setTaskPreHookHandler').mockImplementation(() => {
+        // do nothing
+      });
     });
 
     describe('Local', () => {
