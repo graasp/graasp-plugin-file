@@ -26,7 +26,7 @@ class CopyFileTask extends BaseTask<string> {
 
   async run(
     _handler: DatabaseTransactionHandler,
-    log: FastifyLoggerInstance,
+    _log: FastifyLoggerInstance,
   ): Promise<void> {
     this.status = 'RUNNING';
 

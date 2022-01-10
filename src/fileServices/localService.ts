@@ -16,7 +16,8 @@ export class LocalService implements FileService {
     this.options = options;
   }
 
-  buildFullPath = (filepath: string) => path.join(this.options.storageRootPath, filepath);
+  buildFullPath = (filepath: string) =>
+    path.join(this.options.storageRootPath, filepath);
 
   // copy
   async copyFile({ originalPath, newFilePath }) {

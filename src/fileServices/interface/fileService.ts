@@ -29,4 +29,5 @@ export default interface FileService {
     filepath: string;
     mimetype: string;
   }): Promise<void>;
+  // eslint-disable-next-line semi
 }

@@ -27,7 +27,7 @@ class DeleteFileTask extends BaseTask<Item | void> {
 
   async run(
     _handler: DatabaseTransactionHandler,
-    log: FastifyLoggerInstance,
+    _log: FastifyLoggerInstance,
   ): Promise<void> {
     this.status = 'RUNNING';
 

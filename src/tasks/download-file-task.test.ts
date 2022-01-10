@@ -85,7 +85,7 @@ describe('Download File Task', () => {
   });
 
   describe('Local', () => {
-    it(`Download file at storagepath/filepath`, async () => {
+    it('Download file at storagepath/filepath', async () => {
       const input = buildInput({ filepath: TEXT_FILE_PATH });
 
       const task = new DownloadFileTask(actor, localService, input);
@@ -99,7 +99,7 @@ describe('Download File Task', () => {
       expect(task.result.path).toEqual(fullFilepath);
     });
 
-    it(`Should throw NOT FOUND for unexisting file`, async () => {
+    it('Should throw NOT FOUND for unexisting file', async () => {
       const input = buildInput({ filepath: 'file-not-found' });
       const task = new DownloadFileTask(actor, localService, input);
       expect(async () => await task.run(handler, log)).rejects.toEqual(
@@ -112,7 +112,7 @@ describe('Download File Task', () => {
   });
 
   describe('S3', () => {
-    it(`Download file`, async () => {
+    it('Download file', async () => {
       const input = buildInput({ filepath: TEXT_FILE_PATH });
       s3Instance.headObject = jest
         .fn()
@@ -124,7 +124,7 @@ describe('Download File Task', () => {
       // check s3 call
       expect(s3Instance.headObject).toHaveBeenCalledTimes(1);
     });
-    it(`Throw NOT FOUND if file is not found`, async () => {
+    it('Throw NOT FOUND if file is not found', async () => {
       const input = buildInput({ filepath: 'file-not-found' });
       s3Instance.headObject = jest.fn().mockImplementation(() => ({
         promise: jest

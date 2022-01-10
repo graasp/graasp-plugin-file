@@ -99,7 +99,7 @@ export class S3Service implements FileService {
   }
 
   async downloadFile({ reply, filepath, itemId }) {
-    const { s3Bucket: bucket, s3Region: region } = this.options;
+    const { s3Bucket: bucket } = this.options;
     try {
       // check whether file exists
       await this.getMetadata(filepath);
@@ -108,14 +108,16 @@ export class S3Service implements FileService {
         Bucket: bucket,
         Key: filepath,
         Expires: S3_PRESIGNED_EXPIRATION,
-      }
+      };
 
       // Redirect to the object presigned url
-      // It is necessary to add the header manually, because the redirect sends the request and 
+      // It is necessary to add the header manually, because the redirect sends the request and
       // when the fastify-cors plugin try to add the header it's already sent and can't add it.
       // So we add it because otherwise the browser won't send the cookie
       reply.header('Access-Control-Allow-Credentials', 'true');
-      reply.redirect(await this.s3Instance.getSignedUrlPromise('getObject', param));
+      reply.redirect(
+        await this.s3Instance.getSignedUrlPromise('getObject', param),
+      );
     } catch (e) {
       if (e.statusCode === StatusCodes.NOT_FOUND) {
         throw new S3FileNotFound({ filepath, itemId });

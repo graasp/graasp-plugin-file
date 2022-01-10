@@ -66,7 +66,7 @@ describe('Get File Buffer Task', () => {
   });
 
   describe('Local', () => {
-    it(`Get File buffer`, async () => {
+    it('Get File buffer', async () => {
       const input = buildInput({ filename: TEXT_FILE_PATH });
 
       const task = new GetFileBufferTask(actor, localService, input);
@@ -80,7 +80,7 @@ describe('Get File Buffer Task', () => {
       expect(task.result.length).toBeTruthy();
     });
 
-    it(`Should throw NOT FOUND for unexisting file`, async () => {
+    it('Should throw NOT FOUND for unexisting file', async () => {
       const input = buildInput({ filename: 'file-not-found' });
       const task = new GetFileBufferTask(actor, localService, input);
       expect(async () => await task.run(handler, log)).rejects.toEqual(
