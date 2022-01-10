@@ -3019,8 +3019,8 @@ __metadata:
 
 "graasp-test@github:graasp/graasp-test":
   version: 0.1.0
-  resolution: "graasp-test@https://github.com/graasp/graasp-test.git#commit=9312f4261c3c2fa12d6e080d927debadc3d1be0a"
-  checksum: 53e859e5f8daa36040ceaa17e7dc75a4d9ec02a0573066dfdbdf9894014ff679b0fb3c0593a465cb806d86ba34a6d884ba4fa9f89c943a5b3bcf7f85507189ea
+  resolution: "graasp-test@https://github.com/graasp/graasp-test.git#commit=c37d9977ea3d3de72a0c5ac16f8e4084cc2e690c"
+  checksum: 1c9f476969a9b16e07c35c4a44ea4e91fc6a58e37831db746e7744e701502a3e6b917d988121e7442e452bd934100e9714502c46a4a70a2580ac765c9fefd0ca
   languageName: node
   linkType: hard
 
