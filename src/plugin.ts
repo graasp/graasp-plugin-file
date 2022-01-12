@@ -14,6 +14,7 @@ import {
   GraaspLocalFileItemOptions,
   GraaspS3FileItemOptions,
 } from './types';
+import { LocalFileNotFound, S3FileNotFound } from './utils/errors';
 
 export interface GraaspPluginFileOptions {
   serviceMethod: ServiceMethod; // S3 or local
@@ -187,16 +188,42 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
       });
       // get filepath and mimetype from last task
       task.getInput = () => prehookTasks[prehookTasks.length - 1].getResult();
-      const posthookTasks =
-        (await downloadPostHookTasks?.(itemId, {
-          member,
-          token: authTokenSubject,
-        })) ?? [];
 
-      return await runner.runSingleSequence(
-        [...prehookTasks, task, ...posthookTasks],
-        log,
-      );
+      let result;
+      try {
+        // build posthooktasks assuming file is found
+        const posthookTasks =
+          (await downloadPostHookTasks?.(
+            { itemId, found: true },
+            {
+              member,
+              token: authTokenSubject,
+            },
+          )) ?? [];
+        result = await runner.runSingleSequence(
+          [...prehookTasks, task, ...posthookTasks],
+          log,
+        );
+      } catch (e) {
+        // re-run posthooktasks, as an error would not trigger posthook
+        if (e instanceof S3FileNotFound || e instanceof LocalFileNotFound) {
+          const posthookTasks = await downloadPostHookTasks?.(
+            { itemId, found: false },
+            {
+              member,
+              token: authTokenSubject,
+            },
+          );
+          if (posthookTasks) {
+            await runner.runSingleSequence(posthookTasks, log);
+          }
+        }
+
+        // always throw to respond with file not found error
+        throw e;
+      }
+
+      return result;
     },
   );
 };

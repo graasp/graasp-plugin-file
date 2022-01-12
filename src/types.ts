@@ -60,7 +60,7 @@ export type DownloadPreHookTasksFunction = (
 ) => Promise<Task<Actor, unknown>[]>;
 
 export type DownloadPostHookTasksFunction = (
-  itemId: string,
+  args: { itemId: string; found: boolean },
   auth: { member: Member; token: AuthTokenSubject },
 ) => Promise<Task<Actor, unknown>[]>;
 
