@@ -51,11 +51,13 @@ export class LocalService implements FileService {
       throw e;
     }
 
-    // Get thumbnail path
-    reply.type(mimetype);
-    // this header will make the browser download the file with 'name'
-    // instead of simply opening it and showing it
-    reply.header('Content-Disposition', contentDisposition(itemId));
+    if (reply) {
+      // Get thumbnail path
+      reply.type(mimetype);
+      // this header will make the browser download the file with 'name'
+      // instead of simply opening it and showing it
+      reply.header('Content-Disposition', contentDisposition(itemId));
+    }
     return fs.createReadStream(this.buildFullPath(filepath));
   }
 

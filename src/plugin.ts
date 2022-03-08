@@ -108,7 +108,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
 
   const fileTaskManager = new FileTaskManager(serviceOptions, serviceMethod);
 
-  fastify.post<{ Querystring: IdParam }>(
+  fastify.post<{ Querystring: IdParam; Body: any }>(
     '/upload',
     { schema: upload },
     async (request) => {
@@ -117,6 +117,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
         authTokenSubject,
         query: { id: itemId },
         log,
+        body: requestBody,
       } = request;
 
       const actor = member || { id: authTokenSubject?.member };
@@ -138,6 +139,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
               member,
               token: authTokenSubject,
             },
+            requestBody,
           )) ?? [];
 
         const tasks = fileTaskManager.createUploadFileTask(actor, {
@@ -150,6 +152,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
           (await uploadPostHookTasks?.(
             { file, filename, filepath, mimetype, size, itemId },
             { member, token: authTokenSubject },
+            requestBody,
           )) ?? [];
 
         sequences.push([...prehookTasks, tasks, ...posthookTasks]);

@@ -3,6 +3,7 @@ import path from 'path/posix';
 import { ServiceMethod } from '../src';
 export const ROOT_PATH = './test/files';
 export const IMAGE_PATH = './test/files/image.jpeg';
+export const TEXT_PATH = './test/files/1.txt';
 
 export const GET_ITEM_ID = 'dcd6aa46-a4f0-48b4-a872-f907cf646db0';
 export const ITEM_S3_KEY =

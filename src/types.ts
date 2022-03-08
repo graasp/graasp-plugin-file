@@ -40,6 +40,7 @@ export type AuthTokenSubject = {
 export type UploadPreHookTasksFunction = (
   data: { parentId: string; mimetype: string },
   auth: { member: Member; token: AuthTokenSubject },
+  requestBody?: any,
 ) => Promise<Task<Actor, unknown>[]>;
 
 export type UploadPostHookTasksFunction = (
@@ -52,6 +53,7 @@ export type UploadPostHookTasksFunction = (
     itemId: string;
   },
   auth: { member: Member; token: AuthTokenSubject },
+  requestBody?: any,
 ) => Promise<Task<Actor, unknown>[]>;
 
 export type DownloadPreHookTasksFunction = (

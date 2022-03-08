@@ -1,5 +1,5 @@
 import { FastifyLoggerInstance, FastifyReply } from 'fastify';
-import fs from 'fs';
+import fs, { ReadStream } from 'fs';
 import S3 from 'aws-sdk/clients/s3';
 import { v4 } from 'uuid';
 import { DatabaseTransactionHandler } from 'graasp';
@@ -10,6 +10,7 @@ import {
   FILE_SERVICES,
   DEFAULT_S3_OPTIONS,
   TEXT_FILE_PATH,
+  TEXT_PATH,
 } from '../../test/fixtures';
 import { LocalService } from '../fileServices/localService';
 import { S3Service } from '../fileServices/s3Service';
@@ -24,6 +25,14 @@ import { StatusCodes } from 'http-status-codes';
 
 const handler = {} as unknown as DatabaseTransactionHandler;
 const log = {} as unknown as FastifyLoggerInstance;
+
+const filepath = path.join(__dirname, '../..', TEXT_PATH);
+const body = fs.createReadStream(filepath);
+jest.mock('node-fetch', () =>
+  jest.fn().mockReturnValue({
+    body: { pipe: (writeStream) => body.pipe(writeStream), on: jest.fn() },
+  }),
+);
 
 const DEFAULT_LOCAL_OPTIONS = buildDefaultLocalOptions(
   path.resolve(__dirname, '../..'),
@@ -53,20 +62,26 @@ const buildInput = (opts?: {
   itemId?: string;
   filepath?: string;
   mimetype?: string;
+  fileStorage?: string;
   reply?: FastifyReply;
 }) => {
-  const { filepath, mimetype, itemId, reply } = opts ?? {};
+  const {
+    filepath,
+    mimetype,
+    itemId,
+    reply = {
+      type: jest.fn(),
+      header: jest.fn(),
+      redirect: jest.fn(),
+    } as unknown as FastifyReply,
+    fileStorage,
+  } = opts ?? {};
   return {
     itemId: itemId ?? v4(),
     filepath: filepath ?? 'file/path',
     mimetype: mimetype ?? 'mimetype',
-    reply:
-      reply ??
-      ({
-        type: jest.fn(),
-        header: jest.fn(),
-        redirect: jest.fn(),
-      } as unknown as FastifyReply),
+    fileStorage,
+    reply,
   };
 };
 
@@ -96,7 +111,7 @@ describe('Download File Task', () => {
       expect(fs.existsSync(fullFilepath)).toBe(true);
 
       // should be a readstream
-      expect(task.result.path).toEqual(fullFilepath);
+      expect((task.result as ReadStream).path).toEqual(fullFilepath);
     });
 
     it('Should throw NOT FOUND for unexisting file', async () => {
@@ -112,9 +127,12 @@ describe('Download File Task', () => {
   });
 
   describe('S3', () => {
-    it('Download file', async () => {
+    it('Download file and redirect', async () => {
       const input = buildInput({ filepath: TEXT_FILE_PATH });
       s3Instance.headObject = jest
+        .fn()
+        .mockImplementation(() => ({ promise: jest.fn() }));
+      s3Instance.getSignedUrlPromise = jest
         .fn()
         .mockImplementation(() => ({ promise: jest.fn() }));
 
@@ -123,6 +141,49 @@ describe('Download File Task', () => {
 
       // check s3 call
       expect(s3Instance.headObject).toHaveBeenCalledTimes(1);
+      expect(s3Instance.getSignedUrlPromise).toHaveBeenCalledTimes(1);
+      expect(input.reply.redirect).toHaveBeenCalledTimes(1);
+    });
+    it('Download file and return file', async () => {
+      const input = buildInput({
+        filepath: TEXT_FILE_PATH,
+        reply: null,
+        fileStorage: path.join(__dirname, '../../test/tmp'),
+      });
+      s3Instance.headObject = jest
+        .fn()
+        .mockImplementation(() => ({ promise: jest.fn() }));
+      s3Instance.getSignedUrlPromise = jest
+        .fn()
+        .mockImplementation(() => ({ promise: jest.fn() }));
+
+      const task = new DownloadFileTask(actor, s3Service, input);
+      await task.run(handler, log);
+
+      // check s3 call
+      expect(s3Instance.headObject).toHaveBeenCalledTimes(1);
+      expect(s3Instance.getSignedUrlPromise).toHaveBeenCalledTimes(1);
+      expect(task.result).toBeTruthy();
+    });
+    it('Download file and return url', async () => {
+      const input = buildInput({
+        filepath: TEXT_FILE_PATH,
+        reply: null,
+      });
+      console.log('input: ', input);
+      s3Instance.headObject = jest
+        .fn()
+        .mockImplementation(() => ({ promise: jest.fn() }));
+      const url = 'myurl';
+      s3Instance.getSignedUrlPromise = jest.fn().mockImplementation(() => url);
+
+      const task = new DownloadFileTask(actor, s3Service, input);
+      await task.run(handler, log);
+
+      // check s3 call
+      expect(s3Instance.headObject).toHaveBeenCalledTimes(1);
+      expect(s3Instance.getSignedUrlPromise).toHaveBeenCalledTimes(1);
+      expect(task.result).toEqual(url);
     });
     it('Throw NOT FOUND if file is not found', async () => {
       const input = buildInput({ filepath: 'file-not-found' });
