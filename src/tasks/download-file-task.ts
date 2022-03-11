@@ -13,7 +13,7 @@ export type DownloadFileInputType = {
   fileStorage?: string;
 };
 
-class DownloadFileTask extends BaseTask<ReadStream | string> {
+class DownloadFileTask extends BaseTask<Actor, ReadStream | string> {
   get name(): string {
     return DownloadFileTask.name;
   }

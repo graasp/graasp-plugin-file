@@ -99,7 +99,8 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
     limits: {
       // fieldNameSize: 0,             // Max field name size in bytes (Default: 100 bytes).
       // fieldSize: 1000000,           // Max field value size in bytes (Default: 1MB).
-      fields: 0, // Max number of non-file fields (Default: Infinity).
+      fields: 5, // Max number of non-file fields (Default: Infinity).
+      // allow some fields for app data and app setting
       fileSize: DEFAULT_MAX_FILE_SIZE, // For multipart forms, the max file size (Default: Infinity).
       files: 5, // Max number of file fields (Default: Infinity).
       // headerPairs: 2000             // Max number of header key=>value pairs (Default: 2000 - same as node's http).
@@ -117,7 +118,6 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
         authTokenSubject,
         query: { id: itemId },
         log,
-        body: requestBody,
       } = request;
 
       const actor = member || { id: authTokenSubject?.member };
@@ -126,11 +126,19 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
       const sequences: Task<Actor, unknown>[][] = [];
 
       for await (const fileObject of files) {
-        const { filename, mimetype } = fileObject;
+        const { filename, mimetype, fields } = fileObject;
         const file = await fileObject.toBuffer();
         const size = Buffer.byteLength(file);
 
         const filepath = buildFilePath(itemId, filename);
+
+        // compute body data from file's fields
+        const fileBody = Object.fromEntries(
+          Object.keys(fields).map((key) => [
+            key,
+            (fields[key] as unknown as { value: string })?.value,
+          ]),
+        );
 
         const prehookTasks =
           (await uploadPreHookTasks?.(
@@ -139,7 +147,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
               member,
               token: authTokenSubject,
             },
-            requestBody,
+            fileBody,
           )) ?? [];
 
         const tasks = fileTaskManager.createUploadFileTask(actor, {
@@ -152,7 +160,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
           (await uploadPostHookTasks?.(
             { file, filename, filepath, mimetype, size, itemId },
             { member, token: authTokenSubject },
-            requestBody,
+            fileBody,
           )) ?? [];
 
         sequences.push([...prehookTasks, tasks, ...posthookTasks]);

@@ -7,7 +7,7 @@ export type DeleteFolderInputType = {
   folderPath?: string;
 };
 
-class DeleteFolderTask extends BaseTask<Item | void> {
+class DeleteFolderTask extends BaseTask<Actor, Item> {
   get name(): string {
     return DeleteFolderTask.name;
   }

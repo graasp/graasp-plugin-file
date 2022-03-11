@@ -5,22 +5,19 @@ export enum ServiceMethod {
   S3,
   LOCAL,
 }
+
+export type FileProperties = {
+  name: string;
+  path: string;
+  mimetype: string;
+  size: string;
+};
 export interface LocalFileItemExtra extends UnknownExtra {
-  file: {
-    name: string;
-    path: string;
-    mimetype: string;
-    size: string;
-  };
+  file: FileProperties;
 }
 
 export interface S3FileItemExtra extends UnknownExtra {
-  s3File: {
-    name: string;
-    path: string;
-    mimetype: string;
-    size: string;
-  };
+  s3File: FileProperties;
 }
 
 export type FileItemExtra = S3FileItemExtra | LocalFileItemExtra;
@@ -40,7 +37,7 @@ export type AuthTokenSubject = {
 export type UploadPreHookTasksFunction = (
   data: { parentId: string; mimetype: string },
   auth: { member: Member; token: AuthTokenSubject },
-  requestBody?: any,
+  fileBody?: any,
 ) => Promise<Task<Actor, unknown>[]>;
 
 export type UploadPostHookTasksFunction = (
@@ -53,7 +50,7 @@ export type UploadPostHookTasksFunction = (
     itemId: string;
   },
   auth: { member: Member; token: AuthTokenSubject },
-  requestBody?: any,
+  fileBody?: any,
 ) => Promise<Task<Actor, unknown>[]>;
 
 export type DownloadPreHookTasksFunction = (

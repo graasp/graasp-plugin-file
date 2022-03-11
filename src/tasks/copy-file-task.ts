@@ -5,13 +5,13 @@ import FileService from '../fileServices/interface/fileService';
 import { CopyFileInvalidPathError } from '../utils/errors';
 
 export type CopyInputType = {
-  newId: string;
-  newFilePath: string;
-  originalPath: string;
-  mimetype: string;
+  newId?: string;
+  newFilePath?: string;
+  originalPath?: string;
+  mimetype?: string;
 };
 
-class CopyFileTask extends BaseTask<string> {
+class CopyFileTask extends BaseTask<Actor, string> {
   get name(): string {
     return CopyFileTask.name;
   }
@@ -21,7 +21,7 @@ class CopyFileTask extends BaseTask<string> {
 
   constructor(actor: Actor, service: FileService, input?: CopyInputType) {
     super(actor, service);
-    this.input = input;
+    this.input = input ?? {};
   }
 
   async run(
