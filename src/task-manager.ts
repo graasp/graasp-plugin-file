@@ -69,7 +69,10 @@ class TaskManager {
     return new DeleteFolderTask(member, this.fileService, data);
   }
 
-  createCopyFileTask(member: Actor, data: CopyInputType): Task<Actor, unknown> {
+  createCopyFileTask(
+    member: Actor,
+    data?: CopyInputType,
+  ): Task<Actor, unknown> {
     return new CopyFileTask(member, this.fileService, data);
   }
 

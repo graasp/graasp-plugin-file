@@ -10,9 +10,10 @@ export type DownloadFileInputType = {
   filepath?: string;
   itemId?: string;
   mimetype?: string;
+  fileStorage?: string;
 };
 
-class DownloadFileTask extends BaseTask<ReadStream> {
+class DownloadFileTask extends BaseTask<Actor, ReadStream | string> {
   get name(): string {
     return DownloadFileTask.name;
   }
@@ -35,7 +36,7 @@ class DownloadFileTask extends BaseTask<ReadStream> {
   ): Promise<void> {
     this.status = 'RUNNING';
 
-    const { reply, itemId, filepath, mimetype } = this.input;
+    const { reply, itemId, filepath, mimetype, fileStorage } = this.input;
 
     if (!filepath || !itemId) {
       throw new DownloadFileInvalidParameterError({
@@ -53,6 +54,7 @@ class DownloadFileTask extends BaseTask<ReadStream> {
         filepath,
         itemId,
         mimetype,
+        fileStorage,
       })) || null;
 
     this.status = 'OK';

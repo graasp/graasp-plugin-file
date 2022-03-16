@@ -10,7 +10,7 @@ export type UploadFileInputType = {
   mimetype: string;
 };
 
-class UploadFileTask extends BaseTask<Item | void> {
+class UploadFileTask extends BaseTask<Actor, Item> {
   get name(): string {
     return UploadFileTask.name;
   }

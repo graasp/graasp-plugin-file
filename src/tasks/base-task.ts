@@ -6,26 +6,31 @@ import {
   DatabaseTransactionHandler,
   PreHookHandlerType,
   PostHookHandlerType,
+  IndividualResultType,
 } from 'graasp';
 import FileService from '../fileServices/interface/fileService';
 
-export abstract class BaseTask<R> implements Task<Actor, R> {
-  protected _result: R;
-  protected _message: string;
-
+export abstract class BaseTask<A extends Actor, R> implements Task<Actor, R> {
   protected fileService: FileService;
 
-  readonly actor: Actor;
+  protected _result: R;
+  protected _message: string;
+  readonly actor: A;
+  protected _partialSubtasks: boolean;
 
   status: TaskStatus;
   targetId: string;
-
+  data: Partial<IndividualResultType<R>>;
   preHookHandler?: PreHookHandlerType<R>;
   postHookHandler?: PostHookHandlerType<R>;
 
+  input?: unknown;
+  skip?: boolean;
+
+  getInput?: () => unknown;
   getResult?: () => unknown;
 
-  constructor(actor: Actor, fileService) {
+  constructor(actor: A, fileService: FileService) {
     this.fileService = fileService;
     this.actor = actor;
     this.status = 'NEW';
@@ -42,5 +47,5 @@ export abstract class BaseTask<R> implements Task<Actor, R> {
   abstract run(
     handler: DatabaseTransactionHandler,
     log: FastifyLoggerInstance,
-  ): Promise<void | BaseTask<R>[]>;
+  ): Promise<void | BaseTask<A, R>[]>;
 }

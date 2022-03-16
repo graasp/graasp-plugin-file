@@ -8,7 +8,7 @@ export type GetFileBufferInputType = {
   filename?: string;
 };
 
-class GetFileBufferTask extends BaseTask<Buffer> {
+class GetFileBufferTask extends BaseTask<Actor, Buffer> {
   get name(): string {
     return GetFileBufferTask.name;
   }

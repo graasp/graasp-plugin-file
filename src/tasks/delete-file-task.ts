@@ -8,7 +8,7 @@ export type DeleteFileInputType = {
   filepath?: string;
 };
 
-class DeleteFileTask extends BaseTask<Item | void> {
+class DeleteFileTask extends BaseTask<Actor, Item> {
   get name(): string {
     return DeleteFileTask.name;
   }

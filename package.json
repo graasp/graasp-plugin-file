@@ -9,7 +9,7 @@
     "prepack": "yarn build",
     "prettier:check": "prettier --check \"{src,test}/**/*.ts\"",
     "prettier:write": "prettier --write \"{src,test}/**/*.ts\"",
-    "test": "jest  --forceExit --coverage --verbose",
+    "test": "jest --forceExit --coverage --verbose",
     "test:watch": "yarn test --watchAll",
     "lint": "eslint .",
     "pre-commit": "yarn prettier:check && yarn lint",
@@ -30,7 +30,8 @@
     "aws-sdk": "2.1074.0",
     "content-disposition": "0.5.4",
     "fastify-multipart": "5.3.1",
-    "http-status-codes": "2.2.0"
+    "http-status-codes": "2.2.0",
+    "node-fetch": "2"
   },
   "devDependencies": {
     "@commitlint/cli": "16.2.1",

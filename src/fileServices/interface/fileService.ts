@@ -18,7 +18,8 @@ export default interface FileService {
     filepath: string;
     itemId: string;
     mimetype: string;
-  }): Promise<ReadStream> | Promise<void>;
+    fileStorage: string;
+  }): Promise<ReadStream | string | void>;
 
   // get file buffer, used for generating thumbnails
   getFileBuffer(args: { filepath: string }): Promise<Buffer>;
