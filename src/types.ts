@@ -2,8 +2,8 @@ import { Actor, Member, Task, UnknownExtra } from 'graasp';
 import S3 from 'aws-sdk/clients/s3';
 
 export enum ServiceMethod {
-  S3,
-  LOCAL,
+  S3 = 's3File',
+  LOCAL = 'file',
 }
 
 export type FileProperties = {
