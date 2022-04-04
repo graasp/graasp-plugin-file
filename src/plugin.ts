@@ -18,7 +18,7 @@ import { MAX_NUMBER_OF_FILES_UPLOAD } from './utils/constants';
 
 export interface GraaspPluginFileOptions {
   shouldRedirectOnDownload?: boolean; // redirect value on download
-  uploadMaxFileNb: number; // max number of files to upload at a time
+  uploadMaxFileNb?: number; // max number of files to upload at a time
   serviceMethod: ServiceMethod; // S3 or local
 
   /** Function used to create the file path given an item id and a filename
