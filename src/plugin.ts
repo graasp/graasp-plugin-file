@@ -14,8 +14,11 @@ import {
   GraaspLocalFileItemOptions,
   GraaspS3FileItemOptions,
 } from './types';
+import { MAX_NUMBER_OF_FILES_UPLOAD } from './utils/constants';
 
 export interface GraaspPluginFileOptions {
+  shouldRedirectOnDownload?: boolean; // redirect value on download
+  uploadMaxFileNb?: number; // max number of files to upload at a time
   serviceMethod: ServiceMethod; // S3 or local
 
   /** Function used to create the file path given an item id and a filename
@@ -61,6 +64,8 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
     uploadPostHookTasks,
     downloadPreHookTasks,
     downloadPostHookTasks,
+    uploadMaxFileNb = MAX_NUMBER_OF_FILES_UPLOAD,
+    shouldRedirectOnDownload = true
   } = options;
 
   const { taskRunner: runner } = fastify;
@@ -102,7 +107,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
       fields: 5, // Max number of non-file fields (Default: Infinity).
       // allow some fields for app data and app setting
       fileSize: DEFAULT_MAX_FILE_SIZE, // For multipart forms, the max file size (Default: Infinity).
-      files: 5, // Max number of file fields (Default: Infinity).
+      files: uploadMaxFileNb, // Max number of file fields (Default: Infinity).
       // headerPairs: 2000             // Max number of header key=>value pairs (Default: 2000 - same as node's http).
     },
   });
@@ -150,7 +155,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
             fileBody,
           )) ?? [];
 
-        const tasks = fileTaskManager.createUploadFileTask(actor, {
+        const task = fileTaskManager.createUploadFileTask(actor, {
           file,
           filepath,
           mimetype,
@@ -163,7 +168,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
             fileBody,
           )) ?? [];
 
-        sequences.push([...prehookTasks, tasks, ...posthookTasks]);
+        sequences.push([...prehookTasks, task, ...posthookTasks]);
       }
 
       return runner.runMultipleSequences(sequences, log);
@@ -193,7 +198,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
       );
 
       const task = fileTaskManager.createDownloadFileTask(actor, {
-        reply,
+        reply: shouldRedirectOnDownload ? reply : null,
         itemId,
       });
       // get filepath and mimetype from last task
@@ -203,6 +208,9 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
           member,
           token: authTokenSubject,
         })) ?? [];
+      if (posthookTasks.length) {
+        posthookTasks[posthookTasks.length - 1].getResult = () => task.result;
+      }
 
       return await runner.runSingleSequence(
         [...prehookTasks, task, ...posthookTasks],
