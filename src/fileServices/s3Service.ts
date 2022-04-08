@@ -183,7 +183,7 @@ export class S3Service implements FileService {
   }
 
   async uploadFile({
-    fileBuffer,
+    fileStream,
     memberId,
     filepath,
     mimetype,
@@ -197,7 +197,7 @@ export class S3Service implements FileService {
         member: memberId,
         // item: id <- cannot add item id
       },
-      Body: fileBuffer,
+      Body: fileStream.PassThrough(),
       ContentType: mimetype,
       CacheControl: 'no-cache', // TODO: improve?
     };

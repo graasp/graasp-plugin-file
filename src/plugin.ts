@@ -131,9 +131,8 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
       const sequences: Task<Actor, unknown>[][] = [];
 
       for await (const fileObject of files) {
-        const { filename, mimetype, fields } = fileObject;
-        const file = await fileObject.toBuffer();
-        const size = Buffer.byteLength(file);
+        const { filename, mimetype, fields, file } = fileObject;
+        // const size = Buffer.byteLength(file);
 
         const filepath = buildFilePath(itemId, filename);
 
@@ -163,7 +162,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
 
         const posthookTasks =
           (await uploadPostHookTasks?.(
-            { file, filename, filepath, mimetype, size, itemId },
+            { file, filename, filepath, mimetype, itemId },
             { member, token: authTokenSubject },
             fileBody,
           )) ?? [];

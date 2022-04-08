@@ -3,9 +3,10 @@ import type { FastifyLoggerInstance } from 'fastify';
 import { BaseTask } from './base-task';
 import FileService from '../fileServices/interface/fileService';
 import { UploadFileInvalidParameterError } from '../utils/errors';
+import { Readable } from 'stream';
 
 export type UploadFileInputType = {
-  file: Buffer;
+  file: Readable;
   filepath: string;
   mimetype: string;
 };
@@ -38,19 +39,19 @@ class UploadFileTask extends BaseTask<Actor, Item> {
     if (!filepath) {
       throw new UploadFileInvalidParameterError({
         filepath,
-        fileSize: file.byteLength,
+        // fileSize: file.byteLength,
       });
     }
 
-    if (!file.byteLength) {
-      throw new UploadFileInvalidParameterError({
-        filepath,
-        fileSize: file.byteLength,
-      });
-    }
+    // if (!file.byteLength) {
+    //   throw new UploadFileInvalidParameterError({
+    //     filepath,
+    //     // fileSize: file.byteLength,
+    //   });
+    // }
 
     await this.fileService.uploadFile({
-      fileBuffer: file,
+      fileStream: file,
       filepath,
       memberId: this.actor.id,
       mimetype,

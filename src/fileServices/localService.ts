@@ -74,7 +74,7 @@ export class LocalService implements FileService {
   }
 
   // upload
-  async uploadFile({ fileBuffer, filepath }): Promise<void> {
+  async uploadFile({ fileStream, filepath }): Promise<void> {
     const folderPath = path.dirname(this.buildFullPath(filepath));
     // create folder
     await mkdir(folderPath, {
@@ -83,7 +83,7 @@ export class LocalService implements FileService {
 
     // create file at path
     await pipeline(
-      Readable.from(fileBuffer),
+      fileStream,
       fs.createWriteStream(this.buildFullPath(filepath)),
     );
   }

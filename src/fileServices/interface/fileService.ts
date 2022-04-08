@@ -1,5 +1,6 @@
 import { FastifyReply } from 'fastify';
 import { ReadStream } from 'fs';
+import { Stream } from 'stream';
 
 export default interface FileService {
   copyFile(args: {
@@ -25,7 +26,7 @@ export default interface FileService {
   getFileBuffer(args: { filepath: string }): Promise<Buffer>;
 
   uploadFile(args: {
-    fileBuffer: Buffer;
+    fileStream: Stream;
     memberId: string;
     filepath: string;
     mimetype: string;
