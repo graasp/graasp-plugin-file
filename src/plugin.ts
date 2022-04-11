@@ -132,7 +132,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
 
       for await (const fileObject of files) {
         const { filename, mimetype, fields, file } = fileObject;
-        // const size = Buffer.byteLength(file);
+        console.log('fields: ', fields);
 
         const filepath = buildFilePath(itemId, filename);
 
@@ -153,11 +153,12 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
             },
             fileBody,
           )) ?? [];
-
+        console.log('file.readableLength', file.readableLength)
         const task = fileTaskManager.createUploadFileTask(actor, {
           file,
           filepath,
           mimetype,
+          size: file.readableLength
         });
 
         const posthookTasks =

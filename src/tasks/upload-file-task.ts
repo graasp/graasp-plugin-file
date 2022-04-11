@@ -9,6 +9,7 @@ export type UploadFileInputType = {
   file: Readable;
   filepath: string;
   mimetype: string;
+  size?: number
 };
 
 class UploadFileTask extends BaseTask<Actor, Item> {
