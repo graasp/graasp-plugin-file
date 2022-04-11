@@ -62,16 +62,16 @@ export class LocalService implements FileService {
   }
 
   // get file buffer, used for generating thumbnails
-  async getFileBuffer({ filepath }): Promise<Buffer> {
-    try {
-      return await readFile(this.buildFullPath(filepath));
-    } catch (e) {
-      if (e.code === 'ENOENT') {
-        throw new LocalFileNotFound({ filepath });
-      }
-      throw e;
-    }
-  }
+  // async getFileBuffer({ filepath }): Promise<Buffer> {
+  //   try {
+  //     return await readFile(this.buildFullPath(filepath));
+  //   } catch (e) {
+  //     if (e.code === 'ENOENT') {
+  //       throw new LocalFileNotFound({ filepath });
+  //     }
+  //     throw e;
+  //   }
+  // }
 
   // upload
   async uploadFile({ fileStream, filepath }): Promise<void> {

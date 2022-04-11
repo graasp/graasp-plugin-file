@@ -11,7 +11,6 @@ export type FileProperties = {
   name: string;
   path: string;
   mimetype: string;
-  size: string;
 };
 export interface LocalFileItemExtra extends UnknownExtra {
   file: FileProperties;

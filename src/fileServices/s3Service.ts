@@ -158,21 +158,21 @@ export class S3Service implements FileService {
   }
 
   // get file buffer, used for generating thumbnails
-  async getFileBuffer({ filepath }): Promise<Buffer> {
-    const { s3Bucket: bucket } = this.options;
-    const params = {
-      Bucket: bucket,
-      Key: filepath,
-    };
-    try {
-      return (await this.s3Instance.getObject(params).promise()).Body as Buffer;
-    } catch (e) {
-      if (e.statusCode === StatusCodes.NOT_FOUND) {
-        throw new S3FileNotFound({ filepath });
-      }
-      throw e;
-    }
-  }
+  // async getFileBuffer({ filepath }): Promise<Buffer> {
+  //   const { s3Bucket: bucket } = this.options;
+  //   const params = {
+  //     Bucket: bucket,
+  //     Key: filepath,
+  //   };
+  //   try {
+  //     return (await this.s3Instance.getObject(params).promise()).Body as Buffer;
+  //   } catch (e) {
+  //     if (e.statusCode === StatusCodes.NOT_FOUND) {
+  //       throw new S3FileNotFound({ filepath });
+  //     }
+  //     throw e;
+  //   }
+  // }
 
   async getMetadata(key: string) {
     const { s3Bucket: Bucket } = this.options;
