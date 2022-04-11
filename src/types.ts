@@ -35,7 +35,11 @@ export type AuthTokenSubject = {
 };
 
 export type UploadPreHookTasksFunction = (
-  data: { parentId: string; mimetype: string },
+  data: {
+    parentId: string;
+    mimetype: string;
+    size: number;
+  },
   auth: { member: Member; token: AuthTokenSubject },
   fileBody?: any,
 ) => Promise<Task<Actor, unknown>[]>;
@@ -47,6 +51,7 @@ export type UploadPostHookTasksFunction = (
     mimetype: string;
     filepath: string;
     itemId: string;
+    size: number;
   },
   auth: { member: Member; token: AuthTokenSubject },
   fileBody?: any,

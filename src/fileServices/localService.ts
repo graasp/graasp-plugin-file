@@ -1,8 +1,7 @@
 import contentDisposition from 'content-disposition';
 import fs from 'fs';
 import path from 'path';
-import { access, copyFile, mkdir, readFile, rm } from 'fs/promises';
-import { Readable } from 'stream';
+import { access, copyFile, mkdir, rm } from 'fs/promises';
 import { pipeline } from 'stream/promises';
 
 import { GraaspLocalFileItemOptions } from '../types';

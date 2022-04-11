@@ -1,6 +1,7 @@
 import { FastifyPluginAsync } from 'fastify';
 import { Actor, IdParam, Member, Task } from 'graasp';
 import fastifyMultipart from 'fastify-multipart';
+import fs from 'fs';
 
 import FileTaskManager from './task-manager';
 import { AuthTokenSubject, ServiceMethod } from './types';
@@ -14,7 +15,11 @@ import {
   GraaspLocalFileItemOptions,
   GraaspS3FileItemOptions,
 } from './types';
-import { MAX_NUMBER_OF_FILES_UPLOAD } from './utils/constants';
+import {
+  MAX_NUMBER_OF_FILES_UPLOAD,
+  MAX_PARALLEL_TASK,
+} from './utils/constants';
+import { spliceIntoChunks } from './utils/utils';
 
 export interface GraaspPluginFileOptions {
   shouldRedirectOnDownload?: boolean; // redirect value on download
@@ -127,13 +132,17 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
 
       const actor = member || { id: authTokenSubject?.member };
 
-      const files = request.files();
+      // const files = request.files();
       const sequences: Task<Actor, unknown>[][] = [];
 
-      for await (const fileObject of files) {
-        const { filename, mimetype, fields, file } = fileObject;
-        console.log('fields: ', fields);
+      // files are saved in temporary folder in disk, they are removed when the response ends
+      // necessary to get file size -> can use stream busboy only otherwise
+      const files = await request.saveRequestFiles();
 
+      for (const fileObject of files) {
+        const { filename, mimetype, fields, filepath: tmpPath } = fileObject;
+        const file = fs.createReadStream(tmpPath);
+        const { size } = fs.statSync(tmpPath);
         const filepath = buildFilePath(itemId, filename);
 
         // compute body data from file's fields
@@ -146,24 +155,23 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
 
         const prehookTasks =
           (await uploadPreHookTasks?.(
-            { parentId: itemId, mimetype },
+            { parentId: itemId, mimetype, size },
             {
               member,
               token: authTokenSubject,
             },
             fileBody,
           )) ?? [];
-        console.log('file.readableLength', file.readableLength)
         const task = fileTaskManager.createUploadFileTask(actor, {
           file,
           filepath,
           mimetype,
-          size: file.readableLength
+          size,
         });
 
         const posthookTasks =
           (await uploadPostHookTasks?.(
-            { file, filename, filepath, mimetype, itemId },
+            { file, filename, filepath, mimetype, itemId, size },
             { member, token: authTokenSubject },
             fileBody,
           )) ?? [];
@@ -171,7 +179,12 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
         sequences.push([...prehookTasks, task, ...posthookTasks]);
       }
 
-      return runner.runMultipleSequences(sequences, log);
+      // chunk to run in parallel
+      const chunkedTasks = spliceIntoChunks(
+        sequences,
+        Math.ceil(sequences.length / MAX_PARALLEL_TASK),
+      );
+      return runner.runMultipleSequences(chunkedTasks, log);
     },
   );
 

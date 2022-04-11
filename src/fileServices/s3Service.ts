@@ -197,7 +197,7 @@ export class S3Service implements FileService {
         member: memberId,
         // item: id <- cannot add item id
       },
-      Body: fileStream.PassThrough(),
+      Body: fileStream,
       ContentType: mimetype,
       CacheControl: 'no-cache', // TODO: improve?
     };
