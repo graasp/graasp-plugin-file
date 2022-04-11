@@ -65,7 +65,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
     downloadPreHookTasks,
     downloadPostHookTasks,
     uploadMaxFileNb = MAX_NUMBER_OF_FILES_UPLOAD,
-    shouldRedirectOnDownload = true
+    shouldRedirectOnDownload = true,
   } = options;
 
   const { taskRunner: runner } = fastify;
