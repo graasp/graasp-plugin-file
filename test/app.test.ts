@@ -14,7 +14,7 @@ import {
 } from './fixtures';
 import { mockCreateDownloadFileTask, mockCreateUploadFileTask } from './mock';
 import { BuildFilePathFunction, ServiceMethod } from '../src/types';
-import { MAX_PARALLEL_TASK } from '../src/utils/constants';
+import { MAX_NB_TASKS_IN_PARALLEL } from '../src/utils/constants';
 
 const runner = new TaskRunner();
 
@@ -133,7 +133,7 @@ describe('Plugin File Base Tests', () => {
     multipleFilesForm.append('file', fileStream);
     multipleFilesForm.append('file', fileStream);
     const moreThanMaxForm = new FormData();
-    for (let i = 0; i <= MAX_PARALLEL_TASK * 2; i++) {
+    for (let i = 0; i <= MAX_NB_TASKS_IN_PARALLEL * 2; i++) {
       moreThanMaxForm.append('file', fileStream);
     }
     const oneFileForm = new FormData();
@@ -154,7 +154,7 @@ describe('Plugin File Base Tests', () => {
         .mockImplementation(() => ({ size: 123 } as Stats));
     });
 
-    it(`Upload runs in max ${MAX_PARALLEL_TASK} tasks in parallel`, async () => {
+    it(`Upload runs in max ${MAX_NB_TASKS_IN_PARALLEL} tasks in parallel`, async () => {
       const app = await build(
         buildAppOptions(buildFileServiceOptions(service)),
       );
@@ -170,7 +170,7 @@ describe('Plugin File Base Tests', () => {
 
       await app.close();
       expect(response.statusCode).toBe(StatusCodes.OK);
-      expect(await response.json().length).toBeLessThanOrEqual(MAX_PARALLEL_TASK)
+      expect(await response.json().length).toBeLessThanOrEqual(MAX_NB_TASKS_IN_PARALLEL)
     })
 
     it('Successfully upload a file', async () => {

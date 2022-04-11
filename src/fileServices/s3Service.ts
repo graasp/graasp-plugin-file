@@ -8,13 +8,14 @@ import { GraaspS3FileItemOptions } from '../types';
 import FileService from './interface/fileService';
 import { S3FileNotFound } from '../utils/errors';
 import { StatusCodes } from 'http-status-codes';
-import { S3_PRESIGNED_EXPIRATION } from '../utils/constants';
+import { DEFAULT_CACHE_CONTROL_MAX_AGE, S3_PRESIGNED_EXPIRATION } from '../utils/constants';
 
 export class S3Service implements FileService {
   private readonly options: GraaspS3FileItemOptions;
   private readonly s3Instance: S3;
+  private cacheControlMaxAge: number
 
-  constructor(options: GraaspS3FileItemOptions) {
+  constructor(options: GraaspS3FileItemOptions, cacheControlMaxAge?) {
     this.options = options;
 
     const {
@@ -22,8 +23,11 @@ export class S3Service implements FileService {
       s3AccessKeyId: accessKeyId,
       s3SecretAccessKey: secretAccessKey,
       s3UseAccelerateEndpoint: useAccelerateEndpoint = false,
+
       s3Instance,
     } = options;
+
+    this.cacheControlMaxAge = cacheControlMaxAge ?? DEFAULT_CACHE_CONTROL_MAX_AGE
 
     this.s3Instance =
       s3Instance ??
@@ -199,7 +203,7 @@ export class S3Service implements FileService {
       },
       Body: fileStream,
       ContentType: mimetype,
-      CacheControl: 'no-cache', // TODO: improve?
+      CacheControl: `max-age=${this.cacheControlMaxAge}`, // TODO: improve?
     };
 
     // TO CHANGE: use signed url ? but difficult to set up callback
