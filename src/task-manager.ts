@@ -19,7 +19,7 @@ class TaskManager {
   constructor(
     options: { s3: GraaspS3FileItemOptions; local: GraaspLocalFileItemOptions },
     serviceMethod: ServiceMethod,
-    cacheControlMaxAge?: number
+    cacheControlMaxAge?: number,
   ) {
     switch (serviceMethod) {
       case ServiceMethod.S3:

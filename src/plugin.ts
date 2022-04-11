@@ -73,7 +73,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
     downloadPostHookTasks,
     uploadMaxFileNb = MAX_NUMBER_OF_FILES_UPLOAD,
     shouldRedirectOnDownload = true,
-    cacheControlMaxAge = DEFAULT_CACHE_CONTROL_MAX_AGE
+    cacheControlMaxAge = DEFAULT_CACHE_CONTROL_MAX_AGE,
   } = options;
 
   const { taskRunner: runner } = fastify;
@@ -120,7 +120,11 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
     },
   });
 
-  const fileTaskManager = new FileTaskManager(serviceOptions, serviceMethod, cacheControlMaxAge);
+  const fileTaskManager = new FileTaskManager(
+    serviceOptions,
+    serviceMethod,
+    cacheControlMaxAge,
+  );
 
   fastify.post<{ Querystring: IdParam; Body: any }>(
     '/upload',

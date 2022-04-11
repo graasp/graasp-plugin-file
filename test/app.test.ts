@@ -170,8 +170,10 @@ describe('Plugin File Base Tests', () => {
 
       await app.close();
       expect(response.statusCode).toBe(StatusCodes.OK);
-      expect(await response.json().length).toBeLessThanOrEqual(MAX_NB_TASKS_IN_PARALLEL)
-    })
+      expect(await response.json().length).toBeLessThanOrEqual(
+        MAX_NB_TASKS_IN_PARALLEL,
+      );
+    });
 
     it('Successfully upload a file', async () => {
       const app = await build(
