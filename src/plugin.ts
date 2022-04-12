@@ -16,7 +16,6 @@ import {
   GraaspS3FileItemOptions,
 } from './types';
 import {
-  DEFAULT_CACHE_CONTROL_MAX_AGE,
   MAX_NUMBER_OF_FILES_UPLOAD,
   MAX_NB_TASKS_IN_PARALLEL,
 } from './utils/constants';
@@ -25,7 +24,6 @@ import { spliceIntoChunks } from './utils/utils';
 export interface GraaspPluginFileOptions {
   shouldRedirectOnDownload?: boolean; // redirect value on download
   uploadMaxFileNb?: number; // max number of files to upload at a time
-  cacheControlMaxAge?: number; // cache control value
   serviceMethod: ServiceMethod; // S3 or local
 
   /** Function used to create the file path given an item id and a filename
@@ -76,7 +74,6 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
     downloadPostHookTasks,
     uploadMaxFileNb = MAX_NUMBER_OF_FILES_UPLOAD,
     shouldRedirectOnDownload = true,
-    cacheControlMaxAge = DEFAULT_CACHE_CONTROL_MAX_AGE,
   } = options;
 
   const { taskRunner: runner } = fastify;
@@ -123,11 +120,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
     },
   });
 
-  const fileTaskManager = new FileTaskManager(
-    serviceOptions,
-    serviceMethod,
-    cacheControlMaxAge,
-  );
+  const fileTaskManager = new FileTaskManager(serviceOptions, serviceMethod);
 
   fastify.route<{ Querystring: IdParam; Body: any }>({
     method: 'POST',

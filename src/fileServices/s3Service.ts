@@ -8,17 +8,13 @@ import { GraaspS3FileItemOptions } from '../types';
 import FileService from './interface/fileService';
 import { S3FileNotFound } from '../utils/errors';
 import { StatusCodes } from 'http-status-codes';
-import {
-  DEFAULT_CACHE_CONTROL_MAX_AGE,
-  S3_PRESIGNED_EXPIRATION,
-} from '../utils/constants';
+import { S3_PRESIGNED_EXPIRATION } from '../utils/constants';
 
 export class S3Service implements FileService {
   private readonly options: GraaspS3FileItemOptions;
   private readonly s3Instance: S3;
-  private cacheControlMaxAge: number;
 
-  constructor(options: GraaspS3FileItemOptions, cacheControlMaxAge?) {
+  constructor(options: GraaspS3FileItemOptions) {
     this.options = options;
 
     const {
@@ -29,9 +25,6 @@ export class S3Service implements FileService {
 
       s3Instance,
     } = options;
-
-    this.cacheControlMaxAge =
-      cacheControlMaxAge ?? DEFAULT_CACHE_CONTROL_MAX_AGE;
 
     this.s3Instance =
       s3Instance ??
@@ -165,23 +158,6 @@ export class S3Service implements FileService {
     }
   }
 
-  // get file buffer, used for generating thumbnails
-  // async getFileBuffer({ filepath }): Promise<Buffer> {
-  //   const { s3Bucket: bucket } = this.options;
-  //   const params = {
-  //     Bucket: bucket,
-  //     Key: filepath,
-  //   };
-  //   try {
-  //     return (await this.s3Instance.getObject(params).promise()).Body as Buffer;
-  //   } catch (e) {
-  //     if (e.statusCode === StatusCodes.NOT_FOUND) {
-  //       throw new S3FileNotFound({ filepath });
-  //     }
-  //     throw e;
-  //   }
-  // }
-
   async getMetadata(key: string) {
     const { s3Bucket: Bucket } = this.options;
     const metadata = await this.s3Instance
@@ -207,7 +183,6 @@ export class S3Service implements FileService {
       },
       Body: fileStream,
       ContentType: mimetype,
-      CacheControl: `max-age=${this.cacheControlMaxAge}`, // TODO: improve?
     };
 
     // TO CHANGE: use signed url ? but difficult to set up callback

@@ -60,18 +60,6 @@ export class LocalService implements FileService {
     return fs.createReadStream(this.buildFullPath(filepath));
   }
 
-  // get file buffer, used for generating thumbnails
-  // async getFileBuffer({ filepath }): Promise<Buffer> {
-  //   try {
-  //     return await readFile(this.buildFullPath(filepath));
-  //   } catch (e) {
-  //     if (e.code === 'ENOENT') {
-  //       throw new LocalFileNotFound({ filepath });
-  //     }
-  //     throw e;
-  //   }
-  // }
-
   // upload
   async uploadFile({ fileStream, filepath }): Promise<void> {
     const folderPath = path.dirname(this.buildFullPath(filepath));

@@ -21,9 +21,6 @@ export default interface FileService {
     fileStorage?: string;
   }): Promise<ReadStream | string | void>;
 
-  // get file buffer, used for generating thumbnails
-  // getFileBuffer(args: { filepath: string }): Promise<Buffer>;
-
   uploadFile(args: {
     fileStream: ReadStream;
     memberId: string;
