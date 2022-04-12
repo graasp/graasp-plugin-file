@@ -197,9 +197,9 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
       ).map((s) => s.flat());
       return runner.runMultipleSequences(chunkedTasks, log);
     },
-    onResponse: async (request) => {
-      uploadOnResponse?.(request);
-    }
+    onResponse: async (request, reply) => {
+      uploadOnResponse?.(request, reply);
+    },
   });
 
   fastify.get<{ Params: IdParam; Querystring: { size?: string } }>(
