@@ -1,6 +1,6 @@
 import { Actor, Member, Task, UnknownExtra } from 'graasp';
 import S3 from 'aws-sdk/clients/s3';
-import { Stream } from 'stream';
+import { ReadStream } from 'fs';
 
 export enum ServiceMethod {
   S3 = 's3File',
@@ -46,7 +46,7 @@ export type UploadPreHookTasksFunction = (
 
 export type UploadPostHookTasksFunction = (
   data: {
-    file: Stream;
+    file: ReadStream;
     filename: string;
     mimetype: string;
     filepath: string;

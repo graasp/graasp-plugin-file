@@ -36,6 +36,8 @@ export interface GraaspPluginFileOptions {
   // use function as pre/post hook to avoid infinite loop with thumbnails
   uploadPreHookTasks?: UploadPreHookTasksFunction;
   uploadPostHookTasks?: UploadPostHookTasksFunction;
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  uploadOnResponse?: Function;
 
   /**
    * Function building tasks running before downloading a file
@@ -69,6 +71,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
     buildFilePath,
     uploadPreHookTasks,
     uploadPostHookTasks,
+    uploadOnResponse,
     downloadPreHookTasks,
     downloadPostHookTasks,
     uploadMaxFileNb = MAX_NUMBER_OF_FILES_UPLOAD,
@@ -126,10 +129,11 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
     cacheControlMaxAge,
   );
 
-  fastify.post<{ Querystring: IdParam; Body: any }>(
-    '/upload',
-    { schema: upload },
-    async (request) => {
+  fastify.route<{ Querystring: IdParam; Body: any }>({
+    method: 'POST',
+    url: '/upload',
+    schema: upload,
+    handler: async (request) => {
       const {
         member,
         authTokenSubject,
@@ -193,7 +197,10 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
       ).map((s) => s.flat());
       return runner.runMultipleSequences(chunkedTasks, log);
     },
-  );
+    onResponse: async (request) => {
+      uploadOnResponse?.(request);
+    }
+  });
 
   fastify.get<{ Params: IdParam; Querystring: { size?: string } }>(
     '/:id/download',
