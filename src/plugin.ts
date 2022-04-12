@@ -190,7 +190,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
       const chunkedTasks = spliceIntoChunks(
         sequences,
         Math.ceil(sequences.length / MAX_NB_TASKS_IN_PARALLEL),
-      );
+      ).map((s) => s.flat());
       return runner.runMultipleSequences(chunkedTasks, log);
     },
   );
