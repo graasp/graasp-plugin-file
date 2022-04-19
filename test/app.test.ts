@@ -1,5 +1,5 @@
 import FormData from 'form-data';
-import { createReadStream } from 'fs';
+import fs, { createReadStream, Stats } from 'fs';
 import path from 'path';
 import { StatusCodes } from 'http-status-codes';
 import { TaskRunner, Task } from 'graasp-test';
@@ -14,6 +14,7 @@ import {
 } from './fixtures';
 import { mockCreateDownloadFileTask, mockCreateUploadFileTask } from './mock';
 import { BuildFilePathFunction, ServiceMethod } from '../src/types';
+import { MAX_NB_TASKS_IN_PARALLEL } from '../src/utils/constants';
 
 const runner = new TaskRunner();
 
@@ -71,6 +72,11 @@ const buildFileServiceOptions = (service) => {
   throw new Error('Service is not defined');
 };
 
+const filepath = path.resolve(__dirname, '../', TEXT_FILE_PATH);
+const fileStream = createReadStream(filepath);
+
+jest.spyOn(fs, 'createReadStream').mockImplementation(() => fileStream);
+
 describe('Plugin File Base Tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -120,7 +126,21 @@ describe('Plugin File Base Tests', () => {
     });
   });
 
-  describe('POST /upload', () => {
+  describe.each(FILE_SERVICES)('POST /upload for %s', (service) => {
+    // important to define form for each test! We cannot reuse them
+    // tests don't pass if they are define within the tests themselves
+    const multipleFilesForm = new FormData();
+    multipleFilesForm.append('file', fileStream);
+    multipleFilesForm.append('file', fileStream);
+    const moreThanMaxForm = new FormData();
+    for (let i = 0; i <= MAX_NB_TASKS_IN_PARALLEL * 2; i++) {
+      moreThanMaxForm.append('file', fileStream);
+    }
+    const oneFileForm = new FormData();
+    oneFileForm.append('file', fileStream);
+    const oneFileForm1 = new FormData();
+    oneFileForm1.append('file', fileStream);
+
     beforeEach(() => {
       jest.clearAllMocks();
 
@@ -129,92 +149,103 @@ describe('Plugin File Base Tests', () => {
         .mockImplementation(async (sequences) => {
           return sequences;
         });
+      jest
+        .spyOn(fs, 'statSync')
+        .mockImplementation(() => ({ size: 123 } as Stats));
     });
 
-    it.each(FILE_SERVICES)(
-      '%s : Successfully upload a file',
-      async (service) => {
-        const app = await build(
-          buildAppOptions(buildFileServiceOptions(service)),
-        );
-        const mock = mockCreateUploadFileTask(true);
+    it(`Upload runs in max ${MAX_NB_TASKS_IN_PARALLEL} tasks in parallel`, async () => {
+      const app = await build(
+        buildAppOptions(buildFileServiceOptions(service)),
+      );
 
-        const form = new FormData();
-        form.append('file', createReadStream(TEXT_FILE_PATH));
+      mockCreateUploadFileTask(true);
 
-        const response = await app.inject({
-          method: 'POST',
-          url: '/upload',
-          payload: form,
-          headers: form.getHeaders(),
-        });
+      const response = await app.inject({
+        method: 'POST',
+        url: '/upload',
+        payload: moreThanMaxForm,
+        headers: moreThanMaxForm.getHeaders(),
+      });
 
-        expect(response.statusCode).toBe(StatusCodes.OK);
-        // run as many sequences as uploaded files
-        expect((await response.json()).length).toEqual(1);
-        expect(mock).toHaveBeenCalledTimes(1);
-      },
-    );
+      await app.close();
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      expect(await response.json().length).toBeLessThanOrEqual(
+        MAX_NB_TASKS_IN_PARALLEL,
+      );
+    });
 
-    it.each(FILE_SERVICES)(
-      '%s : Successfully upload multiple files',
-      async (service) => {
-        const app = await build(
-          buildAppOptions(buildFileServiceOptions(service)),
-        );
-        const mock = mockCreateUploadFileTask(true);
+    it('Successfully upload a file', async () => {
+      const app = await build(
+        buildAppOptions(buildFileServiceOptions(service)),
+      );
+      const mock = mockCreateUploadFileTask(true);
 
-        const form = new FormData();
-        const filepath = path.resolve(__dirname, '../', TEXT_FILE_PATH);
-        form.append('file', createReadStream(filepath));
-        form.append('file', createReadStream(filepath));
+      const response = await app.inject({
+        method: 'POST',
+        url: '/upload',
+        payload: oneFileForm1,
+        headers: oneFileForm1.getHeaders(),
+      });
 
-        const response = await app.inject({
-          method: 'POST',
-          url: '/upload',
-          payload: form,
-          headers: form.getHeaders(),
-        });
+      await app.close();
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      // run as many sequences as uploaded files
+      expect((await response.json()).length).toEqual(1);
+      expect(mock).toHaveBeenCalledTimes(1);
+    });
 
-        expect(response.statusCode).toBe(StatusCodes.OK);
-        // run as many sequences as uploaded files
-        expect((await response.json()).length).toEqual(2);
-        expect(mock).toHaveBeenCalledTimes(2);
-      },
-    );
+    it('Successfully upload multiple files', async () => {
+      const app = await build(
+        buildAppOptions(buildFileServiceOptions(service)),
+      );
+      const mock = mockCreateUploadFileTask(true);
 
-    it.each(FILE_SERVICES)(
-      '%s : Run upload pre- and posthooks when defined',
-      async (service) => {
-        const uploadPreHookTasks = jest.fn();
-        const uploadPostHookTasks = jest.fn();
+      const response = await app.inject({
+        method: 'POST',
+        url: '/upload',
+        payload: multipleFilesForm,
+        headers: multipleFilesForm.getHeaders(),
+      });
 
-        const app = await build(
-          buildAppOptions(buildFileServiceOptions(service), {
-            uploadPreHookTasks,
-            uploadPostHookTasks,
-          }),
-        );
-        const mock = mockCreateUploadFileTask(true);
+      await app.close();
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      // run as many sequences as uploaded files
+      expect((await response.json()).length).toEqual(2);
+      expect(mock).toHaveBeenCalledTimes(2);
+    });
 
-        const form = new FormData();
-        form.append('file', createReadStream(TEXT_FILE_PATH));
+    it('Run upload pre- and posthooks when defined', async () => {
+      const uploadPreHookTasks = jest.fn();
+      const uploadPostHookTasks = jest.fn();
 
-        const response = await app.inject({
-          method: 'POST',
-          url: '/upload',
-          payload: form,
-          headers: form.getHeaders(),
-        });
+      const app = await build(
+        buildAppOptions(buildFileServiceOptions(service), {
+          uploadPreHookTasks,
+          uploadPostHookTasks,
+        }),
+      );
+      const mock = mockCreateUploadFileTask(true);
 
-        expect(response.statusCode).toBe(StatusCodes.OK);
-        // run as many sequences as uploaded files
-        expect((await response.json()).length).toEqual(1);
-        expect(mock).toHaveBeenCalledTimes(1);
-        expect(uploadPreHookTasks).toHaveBeenCalledTimes(1);
-        expect(uploadPostHookTasks).toHaveBeenCalledTimes(1);
-      },
-    );
+      jest
+        .spyOn(fs, 'statSync')
+        .mockImplementation(() => ({ size: 123 } as Stats));
+
+      const response = await app.inject({
+        method: 'POST',
+        url: '/upload',
+        payload: oneFileForm,
+        headers: oneFileForm.getHeaders(),
+      });
+
+      await app.close();
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      // run as many sequences as uploaded files
+      expect((await response.json()).length).toEqual(1);
+      expect(mock).toHaveBeenCalledTimes(1);
+      expect(uploadPreHookTasks).toHaveBeenCalledTimes(1);
+      expect(uploadPostHookTasks).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('POST /:id/download', () => {

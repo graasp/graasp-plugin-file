@@ -14,21 +14,19 @@ export default interface FileService {
   deleteFolder(args: { folderPath: string }): Promise<void>;
 
   downloadFile(args: {
-    reply: FastifyReply;
+    reply?: FastifyReply;
     filepath: string;
     itemId: string;
-    mimetype: string;
-    fileStorage: string;
+    mimetype?: string;
+    fileStorage?: string;
   }): Promise<ReadStream | string | void>;
 
-  // get file buffer, used for generating thumbnails
-  getFileBuffer(args: { filepath: string }): Promise<Buffer>;
-
   uploadFile(args: {
-    fileBuffer: Buffer;
+    fileStream: ReadStream;
     memberId: string;
     filepath: string;
     mimetype: string;
+    size?: string;
   }): Promise<void>;
   // eslint-disable-next-line semi
 }

@@ -4,9 +4,6 @@ import DeleteFileTask, { DeleteFileInputType } from './tasks/delete-file-task';
 import DownloadFileTask, {
   DownloadFileInputType,
 } from './tasks/download-file-task';
-import GetFileBufferTask, {
-  GetFileBufferInputType,
-} from './tasks/get-file-buffer-task';
 import DeleteFolderTask, {
   DeleteFolderInputType,
 } from './tasks/delete-folder-task';
@@ -74,13 +71,6 @@ class TaskManager {
     data?: CopyInputType,
   ): Task<Actor, unknown> {
     return new CopyFileTask(member, this.fileService, data);
-  }
-
-  createGetFileBufferTask(
-    member: Actor,
-    data: GetFileBufferInputType,
-  ): Task<Actor, unknown> {
-    return new GetFileBufferTask(member, this.fileService, data);
   }
 }
 

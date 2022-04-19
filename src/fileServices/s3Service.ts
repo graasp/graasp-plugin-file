@@ -22,6 +22,7 @@ export class S3Service implements FileService {
       s3AccessKeyId: accessKeyId,
       s3SecretAccessKey: secretAccessKey,
       s3UseAccelerateEndpoint: useAccelerateEndpoint = false,
+
       s3Instance,
     } = options;
 
@@ -157,23 +158,6 @@ export class S3Service implements FileService {
     }
   }
 
-  // get file buffer, used for generating thumbnails
-  async getFileBuffer({ filepath }): Promise<Buffer> {
-    const { s3Bucket: bucket } = this.options;
-    const params = {
-      Bucket: bucket,
-      Key: filepath,
-    };
-    try {
-      return (await this.s3Instance.getObject(params).promise()).Body as Buffer;
-    } catch (e) {
-      if (e.statusCode === StatusCodes.NOT_FOUND) {
-        throw new S3FileNotFound({ filepath });
-      }
-      throw e;
-    }
-  }
-
   async getMetadata(key: string) {
     const { s3Bucket: Bucket } = this.options;
     const metadata = await this.s3Instance
@@ -183,7 +167,7 @@ export class S3Service implements FileService {
   }
 
   async uploadFile({
-    fileBuffer,
+    fileStream,
     memberId,
     filepath,
     mimetype,
@@ -197,9 +181,8 @@ export class S3Service implements FileService {
         member: memberId,
         // item: id <- cannot add item id
       },
-      Body: fileBuffer,
+      Body: fileStream,
       ContentType: mimetype,
-      CacheControl: 'no-cache', // TODO: improve?
     };
 
     // TO CHANGE: use signed url ? but difficult to set up callback

@@ -1,5 +1,6 @@
 import { Actor, Member, Task, UnknownExtra } from 'graasp';
 import S3 from 'aws-sdk/clients/s3';
+import { ReadStream } from 'fs';
 
 export enum ServiceMethod {
   S3 = 's3File',
@@ -10,7 +11,6 @@ export type FileProperties = {
   name: string;
   path: string;
   mimetype: string;
-  size: string;
 };
 export interface LocalFileItemExtra extends UnknownExtra {
   file: FileProperties;
@@ -35,19 +35,23 @@ export type AuthTokenSubject = {
 };
 
 export type UploadPreHookTasksFunction = (
-  data: { parentId: string; mimetype: string },
+  data: {
+    parentId: string;
+    mimetype: string;
+    size: number;
+  },
   auth: { member: Member; token: AuthTokenSubject },
   fileBody?: any,
 ) => Promise<Task<Actor, unknown>[]>;
 
 export type UploadPostHookTasksFunction = (
   data: {
-    file: Buffer;
+    file: ReadStream;
     filename: string;
     mimetype: string;
-    size: number;
     filepath: string;
     itemId: string;
+    size: number;
   },
   auth: { member: Member; token: AuthTokenSubject },
   fileBody?: any,

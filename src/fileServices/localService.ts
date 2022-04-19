@@ -1,8 +1,7 @@
 import contentDisposition from 'content-disposition';
 import fs from 'fs';
 import path from 'path';
-import { access, copyFile, mkdir, readFile, rm } from 'fs/promises';
-import { Readable } from 'stream';
+import { access, copyFile, mkdir, rm } from 'fs/promises';
 import { pipeline } from 'stream/promises';
 
 import { GraaspLocalFileItemOptions } from '../types';
@@ -61,20 +60,8 @@ export class LocalService implements FileService {
     return fs.createReadStream(this.buildFullPath(filepath));
   }
 
-  // get file buffer, used for generating thumbnails
-  async getFileBuffer({ filepath }): Promise<Buffer> {
-    try {
-      return await readFile(this.buildFullPath(filepath));
-    } catch (e) {
-      if (e.code === 'ENOENT') {
-        throw new LocalFileNotFound({ filepath });
-      }
-      throw e;
-    }
-  }
-
   // upload
-  async uploadFile({ fileBuffer, filepath }): Promise<void> {
+  async uploadFile({ fileStream, filepath }): Promise<void> {
     const folderPath = path.dirname(this.buildFullPath(filepath));
     // create folder
     await mkdir(folderPath, {
@@ -83,7 +70,7 @@ export class LocalService implements FileService {
 
     // create file at path
     await pipeline(
-      Readable.from(fileBuffer),
+      fileStream,
       fs.createWriteStream(this.buildFullPath(filepath)),
     );
   }

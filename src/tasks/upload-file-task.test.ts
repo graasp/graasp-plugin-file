@@ -1,13 +1,16 @@
 import { FastifyLoggerInstance } from 'fastify';
-import fs from 'fs';
+import fs, { ReadStream } from 'fs';
 import S3 from 'aws-sdk/clients/s3';
 import { DatabaseTransactionHandler } from 'graasp';
+import path from 'path';
 import { ServiceMethod } from '..';
 import {
   GRAASP_ACTOR,
   buildDefaultLocalOptions,
   FILE_SERVICES,
   DEFAULT_S3_OPTIONS,
+  IMAGE_PATH,
+  TEXT_FILE_PATH,
 } from '../../test/fixtures';
 import { LocalService } from '../fileServices/localService';
 import { S3Service } from '../fileServices/s3Service';
@@ -37,18 +40,21 @@ const buildFileService = (service: ServiceMethod) => {
   }
 };
 const actor = GRAASP_ACTOR;
-const DEFAULT_FILE_BUFFER = new Buffer([1, 2, 3]);
+const DEFAULT_FILE_PATH = path.resolve(__dirname, '../..', TEXT_FILE_PATH);
+const DEFAULT_FILE_STREAM = fs.createReadStream(DEFAULT_FILE_PATH);
 
 const buildInput = (opts?: {
-  file?: Buffer;
+  file?: ReadStream;
   filepath?: string;
   mimetype?: string;
+  size?: number;
 }) => {
-  const { filepath, mimetype, file } = opts ?? {};
+  const { filepath, mimetype, file, size } = opts ?? {};
   return {
-    file: file ?? DEFAULT_FILE_BUFFER,
-    filepath: filepath ?? 'file/path',
+    file: file ?? DEFAULT_FILE_STREAM,
+    filepath: filepath ?? DEFAULT_FILE_PATH,
     mimetype: mimetype ?? 'mimetype',
+    size: size ?? 123,
   };
 };
 
@@ -60,19 +66,19 @@ describe('Upload File Task', () => {
     expect(async () => await task.run(handler, log)).rejects.toEqual(
       new UploadFileInvalidParameterError({
         filepath: input.filepath,
-        fileSize: input.file.byteLength,
+        size: input.size,
       }),
     );
   });
 
   it.each(FILE_SERVICES)('%s: Empty file should throw', (service) => {
-    const input = buildInput({ file: new Buffer([]) });
+    const input = buildInput({ size: 0 });
 
     const task = new UploadFileTask(actor, buildFileService(service), input);
     expect(async () => await task.run(handler, log)).rejects.toEqual(
       new UploadFileInvalidParameterError({
         filepath: input.filepath,
-        fileSize: input.file.byteLength,
+        size: input.size,
       }),
     );
   });
@@ -87,7 +93,9 @@ describe('Upload File Task', () => {
       // check file uploaded and its content
       const fullFilepath = `${DEFAULT_LOCAL_OPTIONS.storageRootPath}/${input.filepath}`;
       expect(fs.existsSync(fullFilepath)).toBe(true);
-      expect(fs.readFileSync(fullFilepath).equals(input.file)).toBeTruthy();
+      expect(
+        fs.readFileSync(fullFilepath).equals(fs.readFileSync(input.filepath)),
+      ).toBeTruthy();
 
       // clean files
       fs.unlinkSync(fullFilepath);

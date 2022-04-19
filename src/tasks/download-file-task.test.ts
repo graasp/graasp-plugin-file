@@ -171,7 +171,6 @@ describe('Download File Task', () => {
         filepath: TEXT_FILE_PATH,
         reply: null,
       });
-      console.log('input: ', input);
       s3Instance.headObject = jest
         .fn()
         .mockImplementation(() => ({ promise: jest.fn() }));
