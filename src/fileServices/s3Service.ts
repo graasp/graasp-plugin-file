@@ -102,7 +102,7 @@ export class S3Service implements FileService {
     }
   }
 
-  async downloadFile({ reply, filepath, itemId, fileStorage }) {
+  async downloadFile({ reply, filepath, itemId, fileStorage, expiration }) {
     const { s3Bucket: bucket } = this.options;
     try {
       // check whether file exists
@@ -111,7 +111,7 @@ export class S3Service implements FileService {
       const param = {
         Bucket: bucket,
         Key: filepath,
-        Expires: S3_PRESIGNED_EXPIRATION,
+        Expires: expiration ?? S3_PRESIGNED_EXPIRATION,
       };
 
       const url = await this.s3Instance.getSignedUrlPromise('getObject', param);
