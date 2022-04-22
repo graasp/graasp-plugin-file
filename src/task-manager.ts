@@ -40,7 +40,7 @@ class TaskManager {
 
   createUploadFileTask(
     member: Actor,
-    data: UploadFileInputType,
+    data?: UploadFileInputType,
   ): Task<Actor, unknown> {
     return new UploadFileTask(member, this.fileService, data);
   }
