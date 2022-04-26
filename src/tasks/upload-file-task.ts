@@ -6,10 +6,10 @@ import FileService from '../fileServices/interface/fileService';
 import { UploadFileInvalidParameterError } from '../utils/errors';
 
 export type UploadFileInputType = {
-  file: ReadStream;
-  filepath: string;
-  mimetype: string;
-  size: number;
+  file?: ReadStream;
+  filepath?: string;
+  mimetype?: string;
+  size?: number;
 };
 
 class UploadFileTask extends BaseTask<Actor, Item> {
@@ -26,7 +26,7 @@ class UploadFileTask extends BaseTask<Actor, Item> {
     input?: UploadFileInputType,
   ) {
     super(actor, fileService);
-    this.input = input;
+    this.input = input || {};
   }
 
   async run(
@@ -37,15 +37,9 @@ class UploadFileTask extends BaseTask<Actor, Item> {
 
     const { file, mimetype, filepath, size } = this.input;
 
-    if (!filepath) {
+    if (!file || !filepath || !size) {
       throw new UploadFileInvalidParameterError({
-        filepath,
-        size,
-      });
-    }
-
-    if (!size) {
-      throw new UploadFileInvalidParameterError({
+        file,
         filepath,
         size,
       });
