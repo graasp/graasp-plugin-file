@@ -59,7 +59,7 @@ const buildInput = (opts?: {
 };
 
 describe('Upload File Task', () => {
-  it.each(FILE_SERVICES)('%s: Invalid filename should throw', (service) => {
+  it.each(FILE_SERVICES)('%s: Invalid filepath should throw', (service) => {
     const input = buildInput({ filepath: '' });
 
     const task = new UploadFileTask(actor, buildFileService(service), input);
@@ -73,6 +73,20 @@ describe('Upload File Task', () => {
   });
 
   it.each(FILE_SERVICES)('%s: Empty file should throw', (service) => {
+    const input = buildInput();
+    input.file = null;
+
+    const task = new UploadFileTask(actor, buildFileService(service), input);
+    expect(async () => await task.run(handler, log)).rejects.toEqual(
+      new UploadFileInvalidParameterError({
+        file: null,
+        filepath: input.filepath,
+        size: input.size,
+      }),
+    );
+  });
+
+  it.each(FILE_SERVICES)('%s: Empty size should throw', (service) => {
     const input = buildInput({ size: 0 });
 
     const task = new UploadFileTask(actor, buildFileService(service), input);
