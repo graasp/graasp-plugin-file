@@ -65,6 +65,7 @@ describe('Upload File Task', () => {
     const task = new UploadFileTask(actor, buildFileService(service), input);
     expect(async () => await task.run(handler, log)).rejects.toEqual(
       new UploadFileInvalidParameterError({
+        file: DEFAULT_FILE_STREAM,
         filepath: input.filepath,
         size: input.size,
       }),
@@ -77,6 +78,7 @@ describe('Upload File Task', () => {
     const task = new UploadFileTask(actor, buildFileService(service), input);
     expect(async () => await task.run(handler, log)).rejects.toEqual(
       new UploadFileInvalidParameterError({
+        file: DEFAULT_FILE_STREAM,
         filepath: input.filepath,
         size: input.size,
       }),
