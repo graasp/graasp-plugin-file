@@ -64,11 +64,13 @@ const buildInput = (opts?: {
   mimetype?: string;
   fileStorage?: string;
   reply?: FastifyReply;
+  expiration?: number;
 }) => {
   const {
     filepath,
     mimetype,
     itemId,
+    expiration,
     reply = {
       type: jest.fn(),
       header: jest.fn(),
@@ -82,6 +84,7 @@ const buildInput = (opts?: {
     mimetype: mimetype ?? 'mimetype',
     fileStorage,
     reply,
+    expiration,
   };
 };
 
@@ -184,6 +187,26 @@ describe('Download File Task', () => {
       expect(s3Instance.headObject).toHaveBeenCalledTimes(1);
       expect(s3Instance.getSignedUrlPromise).toHaveBeenCalledTimes(1);
       expect(task.result).toEqual(url);
+    });
+    it('Download file and return link with given expiration', async () => {
+      const expiration = 123;
+      const input = buildInput({ filepath: TEXT_FILE_PATH, expiration });
+      s3Instance.headObject = jest
+        .fn()
+        .mockImplementation(() => ({ promise: jest.fn() }));
+      const mockGetSignedUrl = jest
+        .fn()
+        .mockImplementation(() => ({ promise: jest.fn() }));
+      s3Instance.getSignedUrlPromise = mockGetSignedUrl;
+
+      const task = new DownloadFileTask(actor, s3Service, input);
+      await task.run(handler, log);
+
+      // check s3 call
+      expect(s3Instance.headObject).toHaveBeenCalledTimes(1);
+      expect(s3Instance.getSignedUrlPromise).toHaveBeenCalledTimes(1);
+      expect(mockGetSignedUrl.mock.calls[0][1].Expires).toEqual(expiration);
+      expect(input.reply.redirect).toHaveBeenCalledTimes(1);
     });
     it('Throw NOT FOUND if file is not found', async () => {
       const input = buildInput({ filepath: 'file-not-found' });

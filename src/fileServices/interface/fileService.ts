@@ -19,6 +19,7 @@ export default interface FileService {
     itemId: string;
     mimetype?: string;
     fileStorage?: string;
+    expiration?: number;
   }): Promise<ReadStream | string | void>;
 
   uploadFile(args: {
