@@ -678,12 +678,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/translations@github:graasp/graasp-translations":
+"@graasp/translations@github:graasp/graasp-translations#13/emptyUpload":
   version: 0.1.0
-  resolution: "@graasp/translations@https://github.com/graasp/graasp-translations.git#commit=eee1d431f928cd5c2b38ef51103e98d8718b7357"
+  resolution: "@graasp/translations@https://github.com/graasp/graasp-translations.git#commit=3006148ee6df949a4653b831b07148ec6008494f"
   dependencies:
     i18next: 21.6.11
-  checksum: cf1cf527bda35d9c78241f21c910e5aa45028c1fdf79f6fe8e7a3388c28b66638a68c6228c4a094ff65c4da491456056e73df2a21a3d366be5fab865ed548e9e
+  checksum: d7a0799cbfae90895ecc240b2d574c7ac713f3f7e56b5da84a20e249da8637f385ebd3b539e2b5ea79243a703752b5ef2da872a65e70b433357caa72cc49906f
   languageName: node
   linkType: hard
 
@@ -3061,7 +3061,7 @@ __metadata:
     "@commitlint/cli": 16.2.3
     "@commitlint/config-conventional": 16.2.1
     "@fastify/multipart": 6.0.0
-    "@graasp/translations": "github:graasp/graasp-translations"
+    "@graasp/translations": "github:graasp/graasp-translations#13/emptyUpload"
     "@types/content-disposition": 0.5.4
     "@types/fs-extra": 9.0.13
     "@types/graasp": "github:graasp/graasp-types"

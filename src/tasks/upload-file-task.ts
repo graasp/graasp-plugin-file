@@ -3,7 +3,7 @@ import type { FastifyLoggerInstance } from 'fastify';
 import { ReadStream } from 'fs';
 import { BaseTask } from './base-task';
 import FileService from '../fileServices/interface/fileService';
-import { UploadFileInvalidParameterError } from '../utils/errors';
+import { UploadEmptyFileError, UploadFileInvalidParameterError } from '../utils/errors';
 
 export type UploadFileInputType = {
   file?: ReadStream;
@@ -37,8 +37,16 @@ class UploadFileTask extends BaseTask<Actor, Item> {
 
     const { file, mimetype, filepath, size } = this.input;
 
-    if (!file || !filepath || !size) {
+    if (!file || !filepath) {
       throw new UploadFileInvalidParameterError({
+        file,
+        filepath,
+        size,
+      });
+    }
+
+    if (!size) {
+      throw new UploadEmptyFileError({
         file,
         filepath,
         size,
