@@ -1,6 +1,6 @@
 import { FastifyPluginAsync } from 'fastify';
 import { Actor, IdParam, Member, Task } from 'graasp';
-import fastifyMultipart from 'fastify-multipart';
+import fastifyMultipart from '@fastify/multipart';
 import fs from 'fs';
 
 import FileTaskManager from './task-manager';
