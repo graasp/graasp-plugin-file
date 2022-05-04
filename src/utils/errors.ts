@@ -1,5 +1,6 @@
 import { GraaspErrorDetails, GraaspError } from 'graasp';
 import { StatusCodes } from 'http-status-codes';
+import { FAILURE_MESSAGES } from '@graasp/translations';
 
 export class GraaspBaseError implements GraaspError {
   name: string;
@@ -28,7 +29,7 @@ export class UploadFileInvalidParameterError extends GraaspBaseError {
       {
         code: 'GPFERR001',
         statusCode: StatusCodes.BAD_REQUEST,
-        message: 'Upload parameters are invalid',
+        message: FAILURE_MESSAGES.INVALID_UPLOAD_PARAMETERS,
       },
       data,
     );
@@ -40,7 +41,7 @@ export class CopyFileInvalidPathError extends GraaspBaseError {
       {
         code: 'GPFERR002',
         statusCode: StatusCodes.BAD_REQUEST,
-        message: `Path '${filepath}' is invalid`,
+        message: FAILURE_MESSAGES.INVALID_FILE_PATH_FOR_COPY,
       },
       filepath,
     );
@@ -52,21 +53,21 @@ export class DeleteFileInvalidPathError extends GraaspBaseError {
       {
         code: 'GPFERR003',
         statusCode: StatusCodes.BAD_REQUEST,
-        message: `Path '${filepath}' is invalid`,
+        message: FAILURE_MESSAGES.INVALID_FILE_PATH_FOR_DELETE,
       },
       filepath,
     );
   }
 }
 export class DeleteFolderInvalidPathError extends GraaspBaseError {
-  constructor(filepath?: unknown) {
+  constructor(folderPath?: unknown) {
     super(
       {
         code: 'GPFERR004',
         statusCode: StatusCodes.BAD_REQUEST,
-        message: `Path '${filepath}' is invalid`,
+        message: FAILURE_MESSAGES.INVALID_FOLDER_PATH_FOR_DELETE,
       },
-      filepath,
+      folderPath,
     );
   }
 }
@@ -76,7 +77,7 @@ export class DownloadFileInvalidParameterError extends GraaspBaseError {
       {
         code: 'GPFERR005',
         statusCode: StatusCodes.BAD_REQUEST,
-        message: 'Download parameters are invalid',
+        message: FAILURE_MESSAGES.INVALID_DOWNLOAD_PARAMETERS,
       },
       data,
     );
@@ -89,7 +90,7 @@ export class LocalFileNotFound extends GraaspBaseError {
       {
         code: 'GPFERR006',
         statusCode: StatusCodes.NOT_FOUND,
-        message: 'Local file not found',
+        message: FAILURE_MESSAGES.LOCAL_FILE_NOT_FOUND,
       },
       data,
     );
@@ -102,20 +103,7 @@ export class S3FileNotFound extends GraaspBaseError {
       {
         code: 'GPFERR007',
         statusCode: StatusCodes.NOT_FOUND,
-        message: 'S3 file not found',
-      },
-      data,
-    );
-  }
-}
-
-export class GetFileBufferInvalidParameterError extends GraaspBaseError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GPFERR008',
-        statusCode: StatusCodes.BAD_REQUEST,
-        message: 'Get file buffer parameters are invalid',
+        message: FAILURE_MESSAGES.S3_FILE_NOT_FOUND,
       },
       data,
     );
