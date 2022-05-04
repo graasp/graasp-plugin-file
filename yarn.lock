@@ -678,9 +678,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/translations@github:graasp/graasp-translations#7/filePlugin":
+"@graasp/translations@github:graasp/graasp-translations":
   version: 0.1.0
-  resolution: "@graasp/translations@https://github.com/graasp/graasp-translations.git#commit=775429778cddcaf138f6d89921a230a65f00301e"
+  resolution: "@graasp/translations@https://github.com/graasp/graasp-translations.git#commit=eee1d431f928cd5c2b38ef51103e98d8718b7357"
   dependencies:
     i18next: 21.6.11
   checksum: cf1cf527bda35d9c78241f21c910e5aa45028c1fdf79f6fe8e7a3388c28b66638a68c6228c4a094ff65c4da491456056e73df2a21a3d366be5fab865ed548e9e
@@ -3041,7 +3041,7 @@ __metadata:
     "@commitlint/cli": 16.2.3
     "@commitlint/config-conventional": 16.2.1
     "@fastify/multipart": 6.0.0
-    "@graasp/translations": "github:graasp/graasp-translations#7/filePlugin"
+    "@graasp/translations": "github:graasp/graasp-translations"
     "@types/content-disposition": 0.5.4
     "@types/graasp": "github:graasp/graasp-types"
     "@types/jest": 27.4.1
