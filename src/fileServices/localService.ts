@@ -1,5 +1,6 @@
 import contentDisposition from 'content-disposition';
 import fs from 'fs';
+import fse from 'fs-extra';
 import path from 'path';
 import { access, copyFile, mkdir, rm } from 'fs/promises';
 import { pipeline } from 'stream/promises';
@@ -28,6 +29,18 @@ export class LocalService implements FileService {
     await copyFile(originalFullPath, newFileFullPath);
 
     return newFilePath;
+  }
+
+  async copyFolder({ originalFolderPath, newFolderPath }): Promise<string> {
+    const originalFullPath = this.buildFullPath(originalFolderPath);
+    const newFullPath = this.buildFullPath(newFolderPath);
+
+    await mkdir(path.dirname(newFullPath), { recursive: true });
+
+    // use fs-extra for recursive folder copy
+    await fse.copy(originalFullPath, newFullPath);
+
+    return newFolderPath;
   }
 
   // delete

@@ -10,6 +10,11 @@ export default interface FileService {
     mimetype: string;
   }): Promise<string>;
 
+  copyFolder(args: {
+    originalFolderPath: string;
+    newFolderPath: string;
+  }): Promise<string>;
+
   deleteFile(args: { filepath: string }): Promise<void>;
   deleteFolder(args: { folderPath: string }): Promise<void>;
 

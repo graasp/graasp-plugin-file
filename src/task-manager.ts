@@ -12,6 +12,7 @@ import { ServiceMethod } from './types';
 import { LocalService } from './fileServices/localService';
 import { S3Service } from './fileServices/s3Service';
 import { GraaspLocalFileItemOptions, GraaspS3FileItemOptions } from './types';
+import CopyFolderTask, { CopyFolderType } from './tasks/copy-folder-task';
 
 class TaskManager {
   private readonly fileService: LocalService | S3Service;
@@ -71,6 +72,13 @@ class TaskManager {
     data?: CopyInputType,
   ): Task<Actor, unknown> {
     return new CopyFileTask(member, this.fileService, data);
+  }
+
+  createCopyFolderTask(
+    member: Actor,
+    data: CopyFolderType,
+  ): Task<Actor, unknown> {
+    return new CopyFolderTask(member, this.fileService, data);
   }
 }
 

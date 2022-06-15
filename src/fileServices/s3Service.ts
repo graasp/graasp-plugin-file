@@ -65,6 +65,35 @@ export class S3Service implements FileService {
     return newFilePath;
   }
 
+  async copyFolder({ originalFolderPath, newFolderPath }): Promise<string> {
+    const { s3Bucket: bucket } = this.options;
+
+    const { Contents } = await this.s3Instance
+      .listObjectsV2({
+        Bucket: bucket,
+        Prefix: originalFolderPath,
+      })
+      .promise();
+
+    const paths = Contents.map(({ Key }) => Key);
+
+    if (paths.length) {
+      const copyTasks = paths.map((filepath) => {
+        const params = {
+          CopySource: `${bucket}/${filepath}`,
+          Bucket: bucket,
+          Key: filepath.replace(originalFolderPath, newFolderPath),
+          MetadataDirective: 'REPLACE',
+          CacheControl: 'no-cache', // TODO: improve?
+        };
+        return this.s3Instance.copyObject(params).promise();
+      });
+      await Promise.all(copyTasks);
+    }
+
+    return newFolderPath;
+  }
+
   async deleteFile({ filepath }): Promise<void> {
     const { s3Bucket: bucket } = this.options;
     await this.s3Instance
