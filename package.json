@@ -28,7 +28,7 @@
   "homepage": "https://github.com/graasp/graasp-plugin-file#readme",
   "dependencies": {
     "@fastify/multipart": "6.0.0",
-    "@graasp/translations": "github:graasp/graasp-translations#13/emptyUpload",
+    "@graasp/translations": "github:graasp/graasp-translations",
     "aws-sdk": "2.1111.0",
     "content-disposition": "0.5.4",
     "fs-extra": "10.1.0",
