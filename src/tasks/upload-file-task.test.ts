@@ -9,12 +9,11 @@ import {
   buildDefaultLocalOptions,
   FILE_SERVICES,
   DEFAULT_S3_OPTIONS,
-  IMAGE_PATH,
   TEXT_FILE_PATH,
 } from '../../test/fixtures';
 import { LocalService } from '../fileServices/localService';
 import { S3Service } from '../fileServices/s3Service';
-import { UploadFileInvalidParameterError } from '../utils/errors';
+import { UploadEmptyFileError, UploadFileInvalidParameterError } from '../utils/errors';
 import UploadFileTask from './upload-file-task';
 
 const handler = {} as unknown as DatabaseTransactionHandler;
@@ -91,7 +90,7 @@ describe('Upload File Task', () => {
 
     const task = new UploadFileTask(actor, buildFileService(service), input);
     expect(async () => await task.run(handler, log)).rejects.toEqual(
-      new UploadFileInvalidParameterError({
+      new UploadEmptyFileError({
         file: DEFAULT_FILE_STREAM,
         filepath: input.filepath,
         size: input.size,
