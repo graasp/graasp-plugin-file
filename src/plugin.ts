@@ -1,23 +1,25 @@
-import { FastifyPluginAsync } from 'fastify';
-import { Actor, IdParam, Member, Task } from 'graasp';
-import fastifyMultipart from '@fastify/multipart';
 import fs from 'fs';
 
+import fastifyMultipart from '@fastify/multipart';
+import { FastifyPluginAsync } from 'fastify';
+
+import { Actor, IdParam, Member, Task } from 'graasp';
+
+import { download, upload } from './schema';
 import FileTaskManager from './task-manager';
 import { AuthTokenSubject, ServiceMethod } from './types';
-import { download, upload } from './schema';
 import {
   BuildFilePathFunction,
-  DownloadPreHookTasksFunction,
   DownloadPostHookTasksFunction,
-  UploadPreHookTasksFunction,
-  UploadPostHookTasksFunction,
+  DownloadPreHookTasksFunction,
   GraaspLocalFileItemOptions,
   GraaspS3FileItemOptions,
+  UploadPostHookTasksFunction,
+  UploadPreHookTasksFunction,
 } from './types';
 import {
-  MAX_NUMBER_OF_FILES_UPLOAD,
   MAX_NB_TASKS_IN_PARALLEL,
+  MAX_NUMBER_OF_FILES_UPLOAD,
 } from './utils/constants';
 import { spliceIntoChunks } from './utils/utils';
 

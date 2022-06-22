@@ -1,8 +1,10 @@
-import { Actor, DatabaseTransactionHandler } from 'graasp';
 import type { FastifyLoggerInstance } from 'fastify';
-import { BaseTask } from './base-task';
+
+import { Actor, DatabaseTransactionHandler } from 'graasp';
+
 import FileService from '../fileServices/interface/fileService';
 import { CopyFileInvalidPathError } from '../utils/errors';
+import { BaseTask } from './base-task';
 
 export type CopyInputType = {
   newId?: string;

@@ -1,18 +1,19 @@
-import { Task, Actor } from 'graasp';
+import { Actor, Task } from 'graasp';
+
+import { LocalService } from './fileServices/localService';
+import { S3Service } from './fileServices/s3Service';
 import CopyFileTask, { CopyInputType } from './tasks/copy-file-task';
+import CopyFolderTask, { CopyFolderType } from './tasks/copy-folder-task';
 import DeleteFileTask, { DeleteFileInputType } from './tasks/delete-file-task';
-import DownloadFileTask, {
-  DownloadFileInputType,
-} from './tasks/download-file-task';
 import DeleteFolderTask, {
   DeleteFolderInputType,
 } from './tasks/delete-folder-task';
+import DownloadFileTask, {
+  DownloadFileInputType,
+} from './tasks/download-file-task';
 import UploadFileTask, { UploadFileInputType } from './tasks/upload-file-task';
 import { ServiceMethod } from './types';
-import { LocalService } from './fileServices/localService';
-import { S3Service } from './fileServices/s3Service';
 import { GraaspLocalFileItemOptions, GraaspS3FileItemOptions } from './types';
-import CopyFolderTask, { CopyFolderType } from './tasks/copy-folder-task';
 
 class TaskManager {
   private readonly fileService: LocalService | S3Service;

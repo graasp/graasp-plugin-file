@@ -1,5 +1,6 @@
 import { Item } from 'graasp';
-import { ItemMembershipTaskManager, TaskRunner, Task } from 'graasp-test';
+import { ItemMembershipTaskManager, Task, TaskRunner } from 'graasp-test';
+
 import TaskManager from '../src/task-manager';
 
 export const mockcreateGetOfItemTaskSequence = (

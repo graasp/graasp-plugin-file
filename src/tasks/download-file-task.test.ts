@@ -1,16 +1,21 @@
-import { FastifyLoggerInstance, FastifyReply } from 'fastify';
-import fs, { ReadStream } from 'fs';
 import S3 from 'aws-sdk/clients/s3';
+import fs, { ReadStream } from 'fs';
+import { StatusCodes } from 'http-status-codes';
+import path from 'path';
 import { v4 } from 'uuid';
+
+import { FastifyLoggerInstance, FastifyReply } from 'fastify';
+
 import { DatabaseTransactionHandler } from 'graasp';
+
 import { ServiceMethod } from '..';
 import {
-  GRAASP_ACTOR,
-  buildDefaultLocalOptions,
-  FILE_SERVICES,
   DEFAULT_S3_OPTIONS,
+  FILE_SERVICES,
+  GRAASP_ACTOR,
   TEXT_FILE_PATH,
   TEXT_PATH,
+  buildDefaultLocalOptions,
 } from '../../test/fixtures';
 import { LocalService } from '../fileServices/localService';
 import { S3Service } from '../fileServices/s3Service';
@@ -19,9 +24,7 @@ import {
   LocalFileNotFound,
   S3FileNotFound,
 } from '../utils/errors';
-import path from 'path';
 import DownloadFileTask from './download-file-task';
-import { StatusCodes } from 'http-status-codes';
 
 const handler = {} as unknown as DatabaseTransactionHandler;
 const log = {} as unknown as FastifyLoggerInstance;

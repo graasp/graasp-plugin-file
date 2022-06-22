@@ -1,5 +1,7 @@
 import fastify from 'fastify';
+
 import { TaskRunner } from 'graasp-test';
+
 import plugin, { GraaspPluginFileOptions } from '../src/plugin';
 
 const schemas = {

@@ -1,20 +1,22 @@
 import FormData from 'form-data';
-import fs, { createReadStream, Stats } from 'fs';
-import path from 'path';
+import fs, { Stats, createReadStream } from 'fs';
 import { StatusCodes } from 'http-status-codes';
-import { TaskRunner, Task } from 'graasp-test';
+import path from 'path';
 import { v4 } from 'uuid';
+
+import { Task, TaskRunner } from 'graasp-test';
+
+import { BuildFilePathFunction, ServiceMethod } from '../src/types';
+import { MAX_NB_TASKS_IN_PARALLEL } from '../src/utils/constants';
 import build from './app';
 import {
-  TEXT_FILE_PATH,
   DEFAULT_BUILD_FILE_PATH,
   DEFAULT_S3_OPTIONS,
   FILE_SERVICES,
+  TEXT_FILE_PATH,
   buildDefaultLocalOptions,
 } from './fixtures';
 import { mockCreateDownloadFileTask, mockCreateUploadFileTask } from './mock';
-import { BuildFilePathFunction, ServiceMethod } from '../src/types';
-import { MAX_NB_TASKS_IN_PARALLEL } from '../src/utils/constants';
 
 const runner = new TaskRunner();
 
