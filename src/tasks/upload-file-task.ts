@@ -5,7 +5,10 @@ import type { FastifyLoggerInstance } from 'fastify';
 import { Actor, DatabaseTransactionHandler, Item } from 'graasp';
 
 import FileService from '../fileServices/interface/fileService';
-import { UploadFileInvalidParameterError } from '../utils/errors';
+import {
+  UploadEmptyFileError,
+  UploadFileInvalidParameterError,
+} from '../utils/errors';
 import { BaseTask } from './base-task';
 
 export type UploadFileInputType = {
@@ -40,8 +43,16 @@ class UploadFileTask extends BaseTask<Actor, Item> {
 
     const { file, mimetype, filepath, size } = this.input;
 
-    if (!file || !filepath || !size) {
+    if (!file || !filepath) {
       throw new UploadFileInvalidParameterError({
+        file,
+        filepath,
+        size,
+      });
+    }
+
+    if (!size) {
+      throw new UploadEmptyFileError({
         file,
         filepath,
         size,

@@ -110,3 +110,16 @@ export class S3FileNotFound extends GraaspBaseError {
     );
   }
 }
+
+export class UploadEmptyFileError extends GraaspBaseError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GPFERR008',
+        statusCode: StatusCodes.BAD_REQUEST,
+        message: FAILURE_MESSAGES.UPLOAD_EMPTY_FILE,
+      },
+      data,
+    );
+  }
+}
