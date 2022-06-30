@@ -1,5 +1,6 @@
-import { FastifyReply } from 'fastify';
 import { ReadStream } from 'fs';
+
+import { FastifyReply } from 'fastify';
 
 export default interface FileService {
   copyFile(args: {

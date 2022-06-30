@@ -1,6 +1,9 @@
-import { Actor, Item, Member, Task } from 'graasp';
 import path from 'path/posix';
+
+import { Actor, Item, Member, Task } from 'graasp';
+
 import { ServiceMethod } from '../src';
+
 export const ROOT_PATH = './test/files';
 export const IMAGE_PATH = './test/files/image.jpeg';
 export const TEXT_PATH = './test/files/1.txt';

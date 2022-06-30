@@ -1,6 +1,7 @@
-import { Actor, Member, Task, UnknownExtra } from 'graasp';
 import S3 from 'aws-sdk/clients/s3';
 import { ReadStream } from 'fs';
+
+import { Actor, Member, Task, UnknownExtra } from 'graasp';
 
 export enum ServiceMethod {
   S3 = 's3File',

@@ -1,9 +1,12 @@
-import { Actor, DatabaseTransactionHandler } from 'graasp';
 import { ReadStream } from 'fs';
+
 import type { FastifyLoggerInstance, FastifyReply } from 'fastify';
-import { BaseTask } from './base-task';
+
+import { Actor, DatabaseTransactionHandler } from 'graasp';
+
 import FileService from '../fileServices/interface/fileService';
 import { DownloadFileInvalidParameterError } from '../utils/errors';
+import { BaseTask } from './base-task';
 
 export type DownloadFileInputType = {
   reply?: FastifyReply;

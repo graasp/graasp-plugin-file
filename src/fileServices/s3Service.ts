@@ -1,14 +1,14 @@
 import S3 from 'aws-sdk/clients/s3';
 import contentDisposition from 'content-disposition';
 import fs from 'fs';
+import { StatusCodes } from 'http-status-codes';
 import fetch from 'node-fetch';
 import path from 'path';
 
 import { GraaspS3FileItemOptions } from '../types';
-import FileService from './interface/fileService';
-import { S3FileNotFound } from '../utils/errors';
-import { StatusCodes } from 'http-status-codes';
 import { S3_PRESIGNED_EXPIRATION } from '../utils/constants';
+import { S3FileNotFound } from '../utils/errors';
+import FileService from './interface/fileService';
 
 export class S3Service implements FileService {
   private readonly options: GraaspS3FileItemOptions;
@@ -83,7 +83,7 @@ export class S3Service implements FileService {
           CopySource: `${bucket}/${filepath}`,
           Bucket: bucket,
           Key: filepath.replace(originalFolderPath, newFolderPath),
-          MetadataDirective: 'REPLACE',
+          MetadataDirective: 'COPY',
           CacheControl: 'no-cache', // TODO: improve?
         };
         return this.s3Instance.copyObject(params).promise();

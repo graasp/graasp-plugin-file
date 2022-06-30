@@ -1,6 +1,7 @@
-import { GraaspErrorDetails, GraaspError } from 'graasp';
 import { StatusCodes } from 'http-status-codes';
+
 import { FAILURE_MESSAGES } from '@graasp/translations';
+import { GraaspError, GraaspErrorDetails } from 'graasp';
 
 export class GraaspBaseError implements GraaspError {
   name: string;

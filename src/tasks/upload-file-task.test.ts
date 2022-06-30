@@ -1,19 +1,25 @@
-import { FastifyLoggerInstance } from 'fastify';
-import fs, { ReadStream } from 'fs';
 import S3 from 'aws-sdk/clients/s3';
-import { DatabaseTransactionHandler } from 'graasp';
+import fs, { ReadStream } from 'fs';
 import path from 'path';
+
+import { FastifyLoggerInstance } from 'fastify';
+
+import { DatabaseTransactionHandler } from 'graasp';
+
 import { ServiceMethod } from '..';
 import {
-  GRAASP_ACTOR,
-  buildDefaultLocalOptions,
-  FILE_SERVICES,
   DEFAULT_S3_OPTIONS,
+  FILE_SERVICES,
+  GRAASP_ACTOR,
   TEXT_FILE_PATH,
+  buildDefaultLocalOptions,
 } from '../../test/fixtures';
 import { LocalService } from '../fileServices/localService';
 import { S3Service } from '../fileServices/s3Service';
-import { UploadEmptyFileError, UploadFileInvalidParameterError } from '../utils/errors';
+import {
+  UploadEmptyFileError,
+  UploadFileInvalidParameterError,
+} from '../utils/errors';
 import UploadFileTask from './upload-file-task';
 
 const handler = {} as unknown as DatabaseTransactionHandler;

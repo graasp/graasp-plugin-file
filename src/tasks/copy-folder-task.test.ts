@@ -1,13 +1,15 @@
 import { S3 } from 'aws-sdk';
-import { FastifyLoggerInstance } from 'fastify';
 import { existsSync } from 'fs';
 import { rm } from 'fs-extra';
 import { mkdir, readFile, writeFile } from 'fs/promises';
 import path from 'path';
+
+import { FastifyLoggerInstance } from 'fastify';
+
 import {
-  buildDefaultLocalOptions,
   DEFAULT_S3_OPTIONS,
   GRAASP_ACTOR,
+  buildDefaultLocalOptions,
 } from '../../test/fixtures';
 import { LocalService } from '../fileServices/localService';
 import { S3Service } from '../fileServices/s3Service';

@@ -1,13 +1,13 @@
 import contentDisposition from 'content-disposition';
 import fs from 'fs';
 import fse from 'fs-extra';
-import path from 'path';
 import { access, copyFile, mkdir, rm } from 'fs/promises';
+import path from 'path';
 import { pipeline } from 'stream/promises';
 
 import { GraaspLocalFileItemOptions } from '../types';
-import FileService from './interface/fileService';
 import { LocalFileNotFound } from '../utils/errors';
+import FileService from './interface/fileService';
 
 export class LocalService implements FileService {
   private readonly options: GraaspLocalFileItemOptions;

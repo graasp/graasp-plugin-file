@@ -1,5 +1,7 @@
 import { FastifyLoggerInstance } from 'fastify';
+
 import { Actor, DatabaseTransactionHandler } from 'graasp';
+
 import FileService from '../fileServices/interface/fileService';
 import { BaseTask } from './base-task';
 

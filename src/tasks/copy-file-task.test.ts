@@ -1,21 +1,24 @@
-import { FastifyLoggerInstance } from 'fastify';
-import fs from 'fs';
-import { v4 } from 'uuid';
 import S3 from 'aws-sdk/clients/s3';
+import fs from 'fs';
+import path from 'path/posix';
+import { v4 } from 'uuid';
+
+import { FastifyLoggerInstance } from 'fastify';
+
 import { DatabaseTransactionHandler } from 'graasp';
+
 import { ServiceMethod } from '..';
 import {
-  GRAASP_ACTOR,
-  buildDefaultLocalOptions,
-  FILE_SERVICES,
   DEFAULT_S3_OPTIONS,
+  FILE_SERVICES,
+  GRAASP_ACTOR,
   TEXT_FILE_PATH,
+  buildDefaultLocalOptions,
 } from '../../test/fixtures';
 import { LocalService } from '../fileServices/localService';
 import { S3Service } from '../fileServices/s3Service';
 import { CopyFileInvalidPathError } from '../utils/errors';
 import CopyFileTask from './copy-file-task';
-import path from 'path/posix';
 
 const handler = {} as unknown as DatabaseTransactionHandler;
 const log = {} as unknown as FastifyLoggerInstance;

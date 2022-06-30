@@ -1,9 +1,15 @@
-import { Item, Actor, DatabaseTransactionHandler } from 'graasp';
-import type { FastifyLoggerInstance } from 'fastify';
 import { ReadStream } from 'fs';
-import { BaseTask } from './base-task';
+
+import type { FastifyLoggerInstance } from 'fastify';
+
+import { Actor, DatabaseTransactionHandler, Item } from 'graasp';
+
 import FileService from '../fileServices/interface/fileService';
-import { UploadEmptyFileError, UploadFileInvalidParameterError } from '../utils/errors';
+import {
+  UploadEmptyFileError,
+  UploadFileInvalidParameterError,
+} from '../utils/errors';
+import { BaseTask } from './base-task';
 
 export type UploadFileInputType = {
   file?: ReadStream;

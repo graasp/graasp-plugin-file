@@ -1,14 +1,17 @@
-import { FastifyLoggerInstance } from 'fastify';
+import S3 from 'aws-sdk/clients/s3';
 import fs from 'fs';
 import { mkdir } from 'fs/promises';
-import S3 from 'aws-sdk/clients/s3';
+
+import { FastifyLoggerInstance } from 'fastify';
+
 import { DatabaseTransactionHandler } from 'graasp';
+
 import { ServiceMethod } from '..';
 import {
+  DEFAULT_S3_OPTIONS,
+  FILE_SERVICES,
   GRAASP_ACTOR,
   buildDefaultLocalOptions,
-  FILE_SERVICES,
-  DEFAULT_S3_OPTIONS,
 } from '../../test/fixtures';
 import { LocalService } from '../fileServices/localService';
 import { S3Service } from '../fileServices/s3Service';
