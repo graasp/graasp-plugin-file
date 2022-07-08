@@ -1,6 +1,6 @@
 import type { FastifyLoggerInstance } from 'fastify';
 
-import { Actor, DatabaseTransactionHandler } from 'graasp';
+import { Actor, DatabaseTransactionHandler, TaskStatus } from '@graasp/sdk';
 
 import FileService from '../fileServices/interface/fileService';
 import { CopyFileInvalidPathError } from '../utils/errors';
@@ -30,7 +30,7 @@ class CopyFileTask extends BaseTask<Actor, string> {
     _handler: DatabaseTransactionHandler,
     _log: FastifyLoggerInstance,
   ): Promise<void> {
-    this.status = 'RUNNING';
+    this.status = TaskStatus.RUNNING;
 
     const { originalPath, newFilePath, newId, mimetype } = this.input;
 
@@ -49,7 +49,7 @@ class CopyFileTask extends BaseTask<Actor, string> {
       mimetype,
     });
 
-    this.status = 'OK';
+    this.status = TaskStatus.OK;
   }
 }
 

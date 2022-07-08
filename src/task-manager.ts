@@ -1,4 +1,4 @@
-import { Actor, Task } from 'graasp';
+import { Actor, Task } from '@graasp/sdk';
 
 import { LocalService } from './fileServices/localService';
 import { S3Service } from './fileServices/s3Service';

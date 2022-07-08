@@ -1,6 +1,6 @@
 import path from 'path/posix';
 
-import { Actor, Item, Member, Task } from 'graasp';
+import { Actor, Item, Member, Task } from '@graasp/sdk';
 
 import { ServiceMethod } from '../src';
 

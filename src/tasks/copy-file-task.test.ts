@@ -5,7 +5,7 @@ import { v4 } from 'uuid';
 
 import { FastifyLoggerInstance } from 'fastify';
 
-import { DatabaseTransactionHandler } from 'graasp';
+import { DatabaseTransactionHandler } from '@graasp/sdk';
 
 import { ServiceMethod } from '..';
 import {

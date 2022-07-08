@@ -1,6 +1,11 @@
 import type { FastifyLoggerInstance } from 'fastify';
 
-import { Actor, DatabaseTransactionHandler, Item } from 'graasp';
+import {
+  Actor,
+  DatabaseTransactionHandler,
+  Item,
+  TaskStatus,
+} from '@graasp/sdk';
 
 import FileService from '../fileServices/interface/fileService';
 import { DeleteFileInvalidPathError } from '../utils/errors';
@@ -31,7 +36,7 @@ class DeleteFileTask extends BaseTask<Actor, Item> {
     _handler: DatabaseTransactionHandler,
     _log: FastifyLoggerInstance,
   ): Promise<void> {
-    this.status = 'RUNNING';
+    this.status = TaskStatus.RUNNING;
 
     const { filepath } = this.input;
 
@@ -41,7 +46,7 @@ class DeleteFileTask extends BaseTask<Actor, Item> {
 
     await this.fileService.deleteFile({ filepath });
 
-    this.status = 'OK';
+    this.status = TaskStatus.OK;
   }
 }
 

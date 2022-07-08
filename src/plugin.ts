@@ -3,7 +3,7 @@ import fs from 'fs';
 import fastifyMultipart from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
 
-import { Actor, IdParam, Member, Task } from 'graasp';
+import { Actor, IdParam, Member, Task } from '@graasp/sdk';
 
 import { download, upload } from './schema';
 import FileTaskManager from './task-manager';

@@ -8,7 +8,7 @@ import {
   PreHookHandlerType,
   Task,
   TaskStatus,
-} from 'graasp';
+} from '@graasp/sdk';
 
 import FileService from '../fileServices/interface/fileService';
 
@@ -35,7 +35,7 @@ export abstract class BaseTask<A extends Actor, R> implements Task<Actor, R> {
   constructor(actor: A, fileService: FileService) {
     this.fileService = fileService;
     this.actor = actor;
-    this.status = 'NEW';
+    this.status = TaskStatus.NEW;
   }
 
   abstract get name(): string;
