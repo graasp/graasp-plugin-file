@@ -45,14 +45,17 @@ export class S3Service implements FileService {
   }): Promise<string> {
     const { s3Bucket: bucket } = this.options;
 
+    // We ensure that only defined keys are assigned to the metadata object
+    // Otherwise S3 cannot deal with 'undefined' values property
+    const metadata = Object.fromEntries(
+      Object.entries({ item: newId, member: memberId }).filter(([k, v]) => v),
+    );
+
     const params = {
       CopySource: `${bucket}/${originalPath}`,
       Bucket: bucket,
       Key: newFilePath,
-      Metadata: {
-        member: memberId,
-        item: newId,
-      },
+      Metadata: metadata,
       MetadataDirective: 'REPLACE',
       ContentDisposition: contentDisposition(filename),
       ContentType: mimetype,
