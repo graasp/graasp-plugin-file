@@ -3,7 +3,7 @@ import fs from 'fs';
 import fastifyMultipart from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
 
-import { Actor, IdParam, Member, Task } from '@graasp/sdk';
+import { Actor, IdParam, Member, Task, spliceIntoChunks } from '@graasp/sdk';
 
 import { download, upload } from './schema';
 import FileTaskManager from './task-manager';
@@ -21,7 +21,6 @@ import {
   MAX_NB_TASKS_IN_PARALLEL,
   MAX_NUMBER_OF_FILES_UPLOAD,
 } from './utils/constants';
-import { spliceIntoChunks } from './utils/utils';
 
 export interface GraaspPluginFileOptions {
   shouldRedirectOnDownload?: boolean; // redirect value on download
@@ -186,7 +185,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
       }
 
       // chunk to run in parallel
-      const chunkedTasks = spliceIntoChunks(
+      const chunkedTasks = spliceIntoChunks<typeof sequences[0]>(
         sequences,
         Math.ceil(sequences.length / MAX_NB_TASKS_IN_PARALLEL),
       ).map((s) => s.flat());

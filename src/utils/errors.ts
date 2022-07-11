@@ -1,30 +1,9 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { GraaspError, GraaspErrorDetails } from '@graasp/sdk';
+import { BaseGraaspError } from '@graasp/sdk';
 import { FAILURE_MESSAGES } from '@graasp/translations';
 
-export class GraaspBaseError implements GraaspError {
-  name: string;
-  code: string;
-  message: string;
-  statusCode?: number;
-  data?: unknown;
-  origin: 'plugin' | string;
-
-  constructor(
-    { code, statusCode, message }: GraaspErrorDetails,
-    data?: unknown,
-  ) {
-    this.name = code;
-    this.code = code;
-    this.message = message;
-    this.statusCode = statusCode;
-    this.data = data;
-    this.origin = 'plugin';
-  }
-}
-
-export class UploadFileInvalidParameterError extends GraaspBaseError {
+export class UploadFileInvalidParameterError extends BaseGraaspError {
   constructor(data?: unknown) {
     super(
       {
@@ -36,7 +15,7 @@ export class UploadFileInvalidParameterError extends GraaspBaseError {
     );
   }
 }
-export class CopyFileInvalidPathError extends GraaspBaseError {
+export class CopyFileInvalidPathError extends BaseGraaspError {
   constructor(filepath?: unknown) {
     super(
       {
@@ -48,7 +27,7 @@ export class CopyFileInvalidPathError extends GraaspBaseError {
     );
   }
 }
-export class DeleteFileInvalidPathError extends GraaspBaseError {
+export class DeleteFileInvalidPathError extends BaseGraaspError {
   constructor(filepath?: unknown) {
     super(
       {
@@ -60,7 +39,7 @@ export class DeleteFileInvalidPathError extends GraaspBaseError {
     );
   }
 }
-export class DeleteFolderInvalidPathError extends GraaspBaseError {
+export class DeleteFolderInvalidPathError extends BaseGraaspError {
   constructor(folderPath?: unknown) {
     super(
       {
@@ -72,7 +51,7 @@ export class DeleteFolderInvalidPathError extends GraaspBaseError {
     );
   }
 }
-export class DownloadFileInvalidParameterError extends GraaspBaseError {
+export class DownloadFileInvalidParameterError extends BaseGraaspError {
   constructor(data?: unknown) {
     super(
       {
@@ -85,7 +64,7 @@ export class DownloadFileInvalidParameterError extends GraaspBaseError {
   }
 }
 
-export class LocalFileNotFound extends GraaspBaseError {
+export class LocalFileNotFound extends BaseGraaspError {
   constructor(data?: unknown) {
     super(
       {
@@ -98,7 +77,7 @@ export class LocalFileNotFound extends GraaspBaseError {
   }
 }
 
-export class S3FileNotFound extends GraaspBaseError {
+export class S3FileNotFound extends BaseGraaspError {
   constructor(data?: unknown) {
     super(
       {
@@ -111,7 +90,7 @@ export class S3FileNotFound extends GraaspBaseError {
   }
 }
 
-export class UploadEmptyFileError extends GraaspBaseError {
+export class UploadEmptyFileError extends BaseGraaspError {
   constructor(data?: unknown) {
     super(
       {

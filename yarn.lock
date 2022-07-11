@@ -872,9 +872,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@github:graasp/graasp-utils#15/testUtils":
-  version: 0.1.0
-  resolution: "@graasp/sdk@https://github.com/graasp/graasp-utils.git#commit=f4f85bcc4eca9ae6a2ac9e7d49f4b855bda55864"
+"@graasp/sdk@portal:/Users/kim/git/graasp-utils::locator=graasp-plugin-file%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "@graasp/sdk@portal:/Users/kim/git/graasp-utils::locator=graasp-plugin-file%40workspace%3A."
   dependencies:
     fastify: ^3.29.1
     fluent-json-schema: 3.1.0
@@ -882,9 +882,8 @@ __metadata:
     qs: 6.10.3
     slonik: 28.1.1
     uuid: 8.3.2
-  checksum: 73e0bd38fb5b09fdbfe81575e613809154faacc2c7425b2787d92fb22842edd596301db948db10c23afb83012ca357a450b477b20cc89905327ccc4481d3177d
   languageName: node
-  linkType: hard
+  linkType: soft
 
 "@graasp/translations@github:graasp/graasp-translations":
   version: 0.1.0
