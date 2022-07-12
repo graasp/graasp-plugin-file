@@ -5,11 +5,11 @@ import type { FastifyLoggerInstance } from 'fastify';
 import {
   Actor,
   DatabaseTransactionHandler,
+  FileService,
   Item,
   TaskStatus,
 } from '@graasp/sdk';
 
-import FileService from '../fileServices/interface/fileService';
 import {
   UploadEmptyFileError,
   UploadFileInvalidParameterError,

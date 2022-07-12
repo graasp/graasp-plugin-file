@@ -5,16 +5,16 @@ import { StatusCodes } from 'http-status-codes';
 import fetch from 'node-fetch';
 import path from 'path';
 
-import { GraaspS3FileItemOptions } from '../types';
+import { FileService, S3FileConfiguration } from '@graasp/sdk';
+
 import { S3_PRESIGNED_EXPIRATION } from '../utils/constants';
 import { S3FileNotFound } from '../utils/errors';
-import FileService from './interface/fileService';
 
 export class S3Service implements FileService {
-  private readonly options: GraaspS3FileItemOptions;
+  private readonly options: S3FileConfiguration;
   private readonly s3Instance: S3;
 
-  constructor(options: GraaspS3FileItemOptions) {
+  constructor(options: S3FileConfiguration) {
     this.options = options;
 
     const {
@@ -190,7 +190,7 @@ export class S3Service implements FileService {
     }
   }
 
-  async getMetadata(key: string) {
+  async getMetadata(key: string): Promise<unknown> {
     const { s3Bucket: Bucket } = this.options;
     const metadata = await this.s3Instance
       .headObject({ Bucket, Key: key })

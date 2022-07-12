@@ -6,7 +6,7 @@ import { v4 } from 'uuid';
 
 import { Task, TaskRunner } from 'graasp-test';
 
-import { BuildFilePathFunction, ServiceMethod } from '../src/types';
+import { BuildFilePathFunction, FileServiceMethod } from '../src/types';
 import { MAX_NB_TASKS_IN_PARALLEL } from '../src/utils/constants';
 import build from './app';
 import {
@@ -47,7 +47,7 @@ const buildLocalOptions = (
   storageRootPath?: string,
   buildFilePath?: BuildFilePathFunction,
 ) => ({
-  serviceMethod: ServiceMethod.LOCAL,
+  serviceMethod: FileServiceMethod.LOCAL,
   serviceOptions: {
     local: buildDefaultLocalOptions(storageRootPath),
   },
@@ -58,7 +58,7 @@ const buildS3Options = (
   s3 = DEFAULT_S3_OPTIONS,
   buildFilePath?: BuildFilePathFunction,
 ) => ({
-  serviceMethod: ServiceMethod.S3,
+  serviceMethod: FileServiceMethod.S3,
   serviceOptions: {
     s3,
   },
@@ -66,9 +66,9 @@ const buildS3Options = (
 });
 
 const buildFileServiceOptions = (service) => {
-  if (service === ServiceMethod.LOCAL) {
+  if (service === FileServiceMethod.LOCAL) {
     return buildLocalOptions();
-  } else if (service === ServiceMethod.S3) {
+  } else if (service === FileServiceMethod.S3) {
     return buildS3Options();
   }
   throw new Error('Service is not defined');

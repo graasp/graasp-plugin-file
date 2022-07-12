@@ -1,4 +1,11 @@
-import { Actor, Task } from '@graasp/sdk';
+import {
+  Actor,
+  FileServiceMethod,
+  FileTaskManager,
+  LocalFileConfiguration,
+  S3FileConfiguration,
+  Task,
+} from '@graasp/sdk';
 
 import { LocalService } from './fileServices/localService';
 import { S3Service } from './fileServices/s3Service';
@@ -12,21 +19,19 @@ import DownloadFileTask, {
   DownloadFileInputType,
 } from './tasks/download-file-task';
 import UploadFileTask, { UploadFileInputType } from './tasks/upload-file-task';
-import { ServiceMethod } from './types';
-import { GraaspLocalFileItemOptions, GraaspS3FileItemOptions } from './types';
 
-class TaskManager {
+class TaskManager implements FileTaskManager {
   private readonly fileService: LocalService | S3Service;
 
   constructor(
-    options: { s3: GraaspS3FileItemOptions; local: GraaspLocalFileItemOptions },
-    serviceMethod: ServiceMethod,
+    options: { s3: S3FileConfiguration; local: LocalFileConfiguration },
+    serviceMethod: FileServiceMethod,
   ) {
     switch (serviceMethod) {
-      case ServiceMethod.S3:
+      case FileServiceMethod.S3:
         this.fileService = new S3Service(options.s3);
         break;
-      case ServiceMethod.LOCAL:
+      case FileServiceMethod.LOCAL:
       default:
         this.fileService = new LocalService(options.local);
         break;

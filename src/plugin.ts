@@ -3,17 +3,24 @@ import fs from 'fs';
 import fastifyMultipart from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
 
-import { Actor, IdParam, Member, Task, spliceIntoChunks } from '@graasp/sdk';
+import {
+  Actor,
+  FileServiceMethod,
+  IdParam,
+  LocalFileConfiguration,
+  Member,
+  S3FileConfiguration,
+  Task,
+  spliceIntoChunks,
+} from '@graasp/sdk';
 
 import { download, upload } from './schema';
 import FileTaskManager from './task-manager';
-import { AuthTokenSubject, ServiceMethod } from './types';
+import { AuthTokenSubject } from './types';
 import {
   BuildFilePathFunction,
   DownloadPostHookTasksFunction,
   DownloadPreHookTasksFunction,
-  GraaspLocalFileItemOptions,
-  GraaspS3FileItemOptions,
   UploadPostHookTasksFunction,
   UploadPreHookTasksFunction,
 } from './types';
@@ -25,7 +32,7 @@ import {
 export interface GraaspPluginFileOptions {
   shouldRedirectOnDownload?: boolean; // redirect value on download
   uploadMaxFileNb?: number; // max number of files to upload at a time
-  serviceMethod: ServiceMethod; // S3 or local
+  serviceMethod: FileServiceMethod; // S3 or local
 
   /** Function used to create the file path given an item id and a filename
    * The path should NOT start with a /
@@ -46,8 +53,8 @@ export interface GraaspPluginFileOptions {
   downloadPostHookTasks?: DownloadPostHookTasksFunction;
 
   serviceOptions: {
-    s3: GraaspS3FileItemOptions;
-    local: GraaspLocalFileItemOptions;
+    s3: S3FileConfiguration;
+    local: LocalFileConfiguration;
   };
 }
 
@@ -84,7 +91,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
   }
 
   if (
-    serviceMethod === ServiceMethod.LOCAL &&
+    serviceMethod === FileServiceMethod.LOCAL &&
     !serviceOptions?.local?.storageRootPath.startsWith('/')
   ) {
     throw new Error(
@@ -92,7 +99,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
     );
   }
 
-  if (serviceMethod === ServiceMethod.S3) {
+  if (serviceMethod === FileServiceMethod.S3) {
     if (buildFilePath('itemId', 'filename').startsWith('/')) {
       throw new Error('graasp-plugin-file: buildFilePath is not well defined');
     }

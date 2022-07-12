@@ -5,14 +5,14 @@ import { access, copyFile, mkdir, rm } from 'fs/promises';
 import path from 'path';
 import { pipeline } from 'stream/promises';
 
-import { GraaspLocalFileItemOptions } from '../types';
+import { FileService, LocalFileConfiguration } from '@graasp/sdk';
+
 import { LocalFileNotFound } from '../utils/errors';
-import FileService from './interface/fileService';
 
 export class LocalService implements FileService {
-  private readonly options: GraaspLocalFileItemOptions;
+  private readonly options: LocalFileConfiguration;
 
-  constructor(options: GraaspLocalFileItemOptions) {
+  constructor(options: LocalFileConfiguration) {
     this.options = options;
   }
 

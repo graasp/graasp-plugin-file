@@ -1,8 +1,12 @@
 import type { FastifyLoggerInstance } from 'fastify';
 
-import { Actor, DatabaseTransactionHandler, TaskStatus } from '@graasp/sdk';
+import {
+  Actor,
+  DatabaseTransactionHandler,
+  FileService,
+  TaskStatus,
+} from '@graasp/sdk';
 
-import FileService from '../fileServices/interface/fileService';
 import { CopyFileInvalidPathError } from '../utils/errors';
 import { BaseTask } from './base-task';
 

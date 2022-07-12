@@ -1,27 +1,6 @@
-import S3 from 'aws-sdk/clients/s3';
 import { ReadStream } from 'fs';
 
-import { Actor, Member, Task, UnknownExtra } from '@graasp/sdk';
-
-export enum ServiceMethod {
-  S3 = 's3File',
-  LOCAL = 'file',
-}
-
-export type FileProperties = {
-  name: string;
-  path: string;
-  mimetype: string;
-};
-export interface LocalFileItemExtra extends UnknownExtra {
-  file: FileProperties;
-}
-
-export interface S3FileItemExtra extends UnknownExtra {
-  s3File: FileProperties;
-}
-
-export type FileItemExtra = S3FileItemExtra | LocalFileItemExtra;
+import { Actor, Member, Task } from '@graasp/sdk';
 
 export type BuildFilePathFunction = (
   itemId: string,
@@ -67,17 +46,3 @@ export type DownloadPostHookTasksFunction = (
   itemId: string,
   auth: { member: Member; token: AuthTokenSubject },
 ) => Promise<Task<Actor, unknown>[]>;
-
-export interface GraaspS3FileItemOptions {
-  s3Region: string;
-  s3Bucket: string;
-  s3AccessKeyId: string;
-  s3SecretAccessKey: string;
-  s3UseAccelerateEndpoint?: boolean;
-  s3Expiration?: number;
-  s3Instance?: S3;
-}
-
-export interface GraaspLocalFileItemOptions {
-  storageRootPath: string;
-}

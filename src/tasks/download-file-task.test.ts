@@ -8,7 +8,7 @@ import { FastifyLoggerInstance, FastifyReply } from 'fastify';
 
 import { DatabaseTransactionHandler } from '@graasp/sdk';
 
-import { ServiceMethod } from '..';
+import { FileServiceMethod } from '..';
 import {
   DEFAULT_S3_OPTIONS,
   FILE_SERVICES,
@@ -49,11 +49,11 @@ const s3Instance = new S3({
   },
 });
 const s3Service = new S3Service({ ...DEFAULT_S3_OPTIONS, s3Instance });
-const buildFileService = (service: ServiceMethod) => {
+const buildFileService = (service: FileServiceMethod) => {
   switch (service) {
-    case ServiceMethod.S3:
+    case FileServiceMethod.S3:
       return localService;
-    case ServiceMethod.LOCAL:
+    case FileServiceMethod.LOCAL:
     default:
       return s3Service;
   }
