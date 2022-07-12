@@ -1,7 +1,9 @@
 import {
   Actor,
-  FileServiceMethod,
+  FileItemType,
+  FileService,
   FileTaskManager,
+  ItemType,
   LocalFileConfiguration,
   S3FileConfiguration,
   Task,
@@ -21,17 +23,17 @@ import DownloadFileTask, {
 import UploadFileTask, { UploadFileInputType } from './tasks/upload-file-task';
 
 class TaskManager implements FileTaskManager {
-  private readonly fileService: LocalService | S3Service;
+  private readonly fileService: FileService;
 
   constructor(
     options: { s3: S3FileConfiguration; local: LocalFileConfiguration },
-    serviceMethod: FileServiceMethod,
+    fileItemType: FileItemType,
   ) {
-    switch (serviceMethod) {
-      case FileServiceMethod.S3:
+    switch (fileItemType) {
+      case ItemType.S3_FILE:
         this.fileService = new S3Service(options.s3);
         break;
-      case FileServiceMethod.LOCAL:
+      case ItemType.LOCAL_FILE:
       default:
         this.fileService = new LocalService(options.local);
         break;

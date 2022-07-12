@@ -5,10 +5,10 @@ import { FastifyPluginAsync } from 'fastify';
 
 import {
   Actor,
-  FileServiceMethod,
+  FileItemType,
   IdParam,
+  ItemType,
   LocalFileConfiguration,
-  Member,
   S3FileConfiguration,
   Task,
   spliceIntoChunks,
@@ -16,7 +16,6 @@ import {
 
 import { download, upload } from './schema';
 import FileTaskManager from './task-manager';
-import { AuthTokenSubject } from './types';
 import {
   BuildFilePathFunction,
   DownloadPostHookTasksFunction,
@@ -32,7 +31,7 @@ import {
 export interface GraaspPluginFileOptions {
   shouldRedirectOnDownload?: boolean; // redirect value on download
   uploadMaxFileNb?: number; // max number of files to upload at a time
-  serviceMethod: FileServiceMethod; // S3 or local
+  fileItemType: FileItemType; // S3 or local
 
   /** Function used to create the file path given an item id and a filename
    * The path should NOT start with a /
@@ -52,7 +51,7 @@ export interface GraaspPluginFileOptions {
   downloadPreHookTasks: DownloadPreHookTasksFunction;
   downloadPostHookTasks?: DownloadPostHookTasksFunction;
 
-  serviceOptions: {
+  fileConfigurations: {
     s3: S3FileConfiguration;
     local: LocalFileConfiguration;
   };
@@ -60,20 +59,13 @@ export interface GraaspPluginFileOptions {
 
 const DEFAULT_MAX_FILE_SIZE = 1024 * 1024 * 250; // 250MB
 
-declare module 'fastify' {
-  interface FastifyRequest {
-    authTokenSubject: AuthTokenSubject;
-    member: Member;
-  }
-}
-
 const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
   fastify,
   options,
 ) => {
   const {
-    serviceMethod,
-    serviceOptions,
+    fileItemType,
+    fileConfigurations,
     buildFilePath,
     uploadPreHookTasks,
     uploadPostHookTasks,
@@ -91,24 +83,24 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
   }
 
   if (
-    serviceMethod === FileServiceMethod.LOCAL &&
-    !serviceOptions?.local?.storageRootPath.startsWith('/')
+    fileItemType === ItemType.LOCAL_FILE &&
+    !fileConfigurations?.local?.storageRootPath.startsWith('/')
   ) {
     throw new Error(
       'graasp-plugin-file: local service storageRootPath is malformed',
     );
   }
 
-  if (serviceMethod === FileServiceMethod.S3) {
+  if (fileItemType === ItemType.S3_FILE) {
     if (buildFilePath('itemId', 'filename').startsWith('/')) {
       throw new Error('graasp-plugin-file: buildFilePath is not well defined');
     }
 
     if (
-      !serviceOptions?.s3?.s3Region ||
-      !serviceOptions?.s3?.s3Bucket ||
-      !serviceOptions?.s3?.s3AccessKeyId ||
-      !serviceOptions?.s3?.s3SecretAccessKey
+      !fileConfigurations?.s3?.s3Region ||
+      !fileConfigurations?.s3?.s3Bucket ||
+      !fileConfigurations?.s3?.s3AccessKeyId ||
+      !fileConfigurations?.s3?.s3SecretAccessKey
     ) {
       throw new Error(
         'graasp-plugin-file: mandatory options for s3 service missing',
@@ -128,7 +120,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
     },
   });
 
-  const fileTaskManager = new FileTaskManager(serviceOptions, serviceMethod);
+  const fileTaskManager = new FileTaskManager(fileConfigurations, fileItemType);
 
   fastify.route<{ Querystring: IdParam; Body: any }>({
     method: 'POST',

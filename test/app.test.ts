@@ -4,15 +4,16 @@ import { StatusCodes } from 'http-status-codes';
 import path from 'path';
 import { v4 } from 'uuid';
 
+import { ItemType } from '@graasp/sdk';
 import { Task, TaskRunner } from 'graasp-test';
 
-import { BuildFilePathFunction, FileServiceMethod } from '../src/types';
+import { BuildFilePathFunction } from '../src/types';
 import { MAX_NB_TASKS_IN_PARALLEL } from '../src/utils/constants';
 import build from './app';
 import {
   DEFAULT_BUILD_FILE_PATH,
   DEFAULT_S3_OPTIONS,
-  FILE_SERVICES,
+  FILE_TYPES,
   TEXT_FILE_PATH,
   buildDefaultLocalOptions,
 } from './fixtures';
@@ -21,7 +22,7 @@ import { mockCreateDownloadFileTask, mockCreateUploadFileTask } from './mock';
 const runner = new TaskRunner();
 
 const buildAppOptions = (
-  { serviceMethod, serviceOptions, buildFilePath },
+  { fileItemType, fileConfigurations, buildFilePath },
   {
     uploadPreHookTasks = null,
     uploadPostHookTasks = null,
@@ -33,8 +34,8 @@ const buildAppOptions = (
 ) => ({
   runner,
   options: {
-    serviceMethod,
-    serviceOptions,
+    fileItemType,
+    fileConfigurations,
     buildFilePath,
     uploadPreHookTasks,
     uploadPostHookTasks,
@@ -47,8 +48,8 @@ const buildLocalOptions = (
   storageRootPath?: string,
   buildFilePath?: BuildFilePathFunction,
 ) => ({
-  serviceMethod: FileServiceMethod.LOCAL,
-  serviceOptions: {
+  fileItemType: ItemType.LOCAL_FILE,
+  fileConfigurations: {
     local: buildDefaultLocalOptions(storageRootPath),
   },
   buildFilePath: buildFilePath ?? DEFAULT_BUILD_FILE_PATH,
@@ -58,17 +59,17 @@ const buildS3Options = (
   s3 = DEFAULT_S3_OPTIONS,
   buildFilePath?: BuildFilePathFunction,
 ) => ({
-  serviceMethod: FileServiceMethod.S3,
-  serviceOptions: {
+  fileItemType: ItemType.S3_FILE,
+  fileConfigurations: {
     s3,
   },
   buildFilePath: buildFilePath ?? DEFAULT_BUILD_FILE_PATH,
 });
 
 const buildFileServiceOptions = (service) => {
-  if (service === FileServiceMethod.LOCAL) {
+  if (service === ItemType.LOCAL_FILE) {
     return buildLocalOptions();
-  } else if (service === FileServiceMethod.S3) {
+  } else if (service === ItemType.S3_FILE) {
     return buildS3Options();
   }
   throw new Error('Service is not defined');
@@ -86,7 +87,7 @@ describe('Plugin File Base Tests', () => {
     jest
       .spyOn(TaskRunner.prototype, 'runSingleSequence')
       .mockImplementation(async (tasks) => {
-        return tasks[0]?.getResult();
+        return tasks[0]?.getResult?.();
       });
   });
 
@@ -128,7 +129,7 @@ describe('Plugin File Base Tests', () => {
     });
   });
 
-  describe.each(FILE_SERVICES)('POST /upload for %s', (service) => {
+  describe.each(FILE_TYPES)('POST /upload for %s', (service) => {
     // important to define form for each test! We cannot reuse them
     // tests don't pass if they are define within the tests themselves
     const multipleFilesForm = new FormData();
@@ -259,7 +260,7 @@ describe('Plugin File Base Tests', () => {
         });
     });
 
-    it.each(FILE_SERVICES)('Successfully download a file', async (service) => {
+    it.each(FILE_TYPES)('Successfully download a file', async (service) => {
       const mock = mockCreateDownloadFileTask(true);
 
       const app = await build(
@@ -276,7 +277,7 @@ describe('Plugin File Base Tests', () => {
       expect(mock).toHaveBeenCalledTimes(1);
     });
 
-    it.each(FILE_SERVICES)('Run upload pre- and posthooks', async (service) => {
+    it.each(FILE_TYPES)('Run upload pre- and posthooks', async (service) => {
       const downloadPreHookTasks = jest
         .fn()
         .mockResolvedValue([new Task({ some: 'value' })]);

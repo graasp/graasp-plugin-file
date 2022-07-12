@@ -1,18 +1,11 @@
 import { ReadStream } from 'fs';
 
-import { Actor, Member, Task } from '@graasp/sdk';
+import { Actor, AuthTokenSubject, Member, Task } from '@graasp/sdk';
 
 export type BuildFilePathFunction = (
   itemId: string,
   filename: string,
 ) => string;
-
-export type AuthTokenSubject = {
-  member: string;
-  item: string;
-  origin: string;
-  app: string;
-};
 
 export type UploadPreHookTasksFunction = (
   data: {

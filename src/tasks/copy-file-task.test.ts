@@ -5,12 +5,11 @@ import { v4 } from 'uuid';
 
 import { FastifyLoggerInstance } from 'fastify';
 
-import { DatabaseTransactionHandler } from '@graasp/sdk';
+import { DatabaseTransactionHandler, ItemType } from '@graasp/sdk';
 
-import { FileServiceMethod } from '..';
 import {
   DEFAULT_S3_OPTIONS,
-  FILE_SERVICES,
+  FILE_TYPES,
   GRAASP_ACTOR,
   TEXT_FILE_PATH,
   buildDefaultLocalOptions,
@@ -36,11 +35,11 @@ const s3Instance = new S3({
   },
 });
 const s3Service = new S3Service({ ...DEFAULT_S3_OPTIONS, s3Instance });
-const buildFileService = (service: FileServiceMethod) => {
+const buildFileService = (service: ItemType) => {
   switch (service) {
-    case FileServiceMethod.S3:
+    case ItemType.S3_FILE:
       return localService;
-    case FileServiceMethod.LOCAL:
+    case ItemType.LOCAL_FILE:
     default:
       return s3Service;
   }
@@ -62,19 +61,16 @@ const buildInput = (opts?: {
 };
 
 describe('Copy File Task', () => {
-  it.each(FILE_SERVICES)(
-    '%s: Invalid original path should throw',
-    (service) => {
-      const input = buildInput({ originalPath: '' });
+  it.each(FILE_TYPES)('%s: Invalid original path should throw', (service) => {
+    const input = buildInput({ originalPath: '' });
 
-      const task = new CopyFileTask(actor, buildFileService(service), input);
-      expect(async () => await task.run(handler, log)).rejects.toEqual(
-        new CopyFileInvalidPathError(input.originalPath),
-      );
-    },
-  );
+    const task = new CopyFileTask(actor, buildFileService(service), input);
+    expect(async () => await task.run(handler, log)).rejects.toEqual(
+      new CopyFileInvalidPathError(input.originalPath),
+    );
+  });
 
-  it.each(FILE_SERVICES)('%s: Invalid new path should throw', (service) => {
+  it.each(FILE_TYPES)('%s: Invalid new path should throw', (service) => {
     const input = buildInput({ newFilePath: '' });
 
     const task = new CopyFileTask(actor, buildFileService(service), input);
