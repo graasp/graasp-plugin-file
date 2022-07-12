@@ -3,7 +3,10 @@ import { StatusCodes } from 'http-status-codes';
 import { BaseGraaspError } from '@graasp/sdk';
 import { FAILURE_MESSAGES } from '@graasp/translations';
 
+import { PLUGIN_NAME } from './constants';
+
 export class UploadFileInvalidParameterError extends BaseGraaspError {
+  origin = PLUGIN_NAME;
   constructor(data?: unknown) {
     super(
       {
@@ -16,6 +19,8 @@ export class UploadFileInvalidParameterError extends BaseGraaspError {
   }
 }
 export class CopyFileInvalidPathError extends BaseGraaspError {
+  origin = PLUGIN_NAME;
+
   constructor(filepath?: unknown) {
     super(
       {
@@ -28,6 +33,8 @@ export class CopyFileInvalidPathError extends BaseGraaspError {
   }
 }
 export class DeleteFileInvalidPathError extends BaseGraaspError {
+  origin = PLUGIN_NAME;
+
   constructor(filepath?: unknown) {
     super(
       {
@@ -40,6 +47,7 @@ export class DeleteFileInvalidPathError extends BaseGraaspError {
   }
 }
 export class DeleteFolderInvalidPathError extends BaseGraaspError {
+  origin = PLUGIN_NAME;
   constructor(folderPath?: unknown) {
     super(
       {
@@ -52,6 +60,7 @@ export class DeleteFolderInvalidPathError extends BaseGraaspError {
   }
 }
 export class DownloadFileInvalidParameterError extends BaseGraaspError {
+  origin = PLUGIN_NAME;
   constructor(data?: unknown) {
     super(
       {
@@ -65,6 +74,7 @@ export class DownloadFileInvalidParameterError extends BaseGraaspError {
 }
 
 export class LocalFileNotFound extends BaseGraaspError {
+  origin = PLUGIN_NAME;
   constructor(data?: unknown) {
     super(
       {
@@ -78,6 +88,7 @@ export class LocalFileNotFound extends BaseGraaspError {
 }
 
 export class S3FileNotFound extends BaseGraaspError {
+  origin = PLUGIN_NAME;
   constructor(data?: unknown) {
     super(
       {
@@ -91,6 +102,7 @@ export class S3FileNotFound extends BaseGraaspError {
 }
 
 export class UploadEmptyFileError extends BaseGraaspError {
+  origin = PLUGIN_NAME;
   constructor(data?: unknown) {
     super(
       {
