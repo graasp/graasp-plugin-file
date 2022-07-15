@@ -190,7 +190,7 @@ export class S3Service implements FileService {
     }
   }
 
-  async getMetadata(key: string): Promise<unknown> {
+  async getMetadata(key: string): Promise<S3.Types.HeadObjectOutput> {
     const { s3Bucket: Bucket } = this.options;
     const metadata = await this.s3Instance
       .headObject({ Bucket, Key: key })
