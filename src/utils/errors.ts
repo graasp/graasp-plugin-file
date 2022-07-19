@@ -20,7 +20,6 @@ export class UploadFileInvalidParameterError extends GraaspError {
   }
 }
 export class CopyFileInvalidPathError extends GraaspError {
-
   constructor(filepath?: unknown) {
     super(
       {
@@ -33,7 +32,6 @@ export class CopyFileInvalidPathError extends GraaspError {
   }
 }
 export class DeleteFileInvalidPathError extends GraaspError {
-
   constructor(filepath?: unknown) {
     super(
       {
