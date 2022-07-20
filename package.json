@@ -38,7 +38,7 @@
   "devDependencies": {
     "@commitlint/cli": "16.2.3",
     "@commitlint/config-conventional": "16.2.1",
-    "@graasp/sdk": "github:graasp/graasp-utils#15/testUtils",
+    "@graasp/sdk": "github:graasp/graasp-sdk",
     "@trivago/prettier-plugin-sort-imports": "3.2.0",
     "@types/content-disposition": "0.5.4",
     "@types/fs-extra": "9.0.13",
@@ -49,7 +49,7 @@
     "eslint": "8.13.0",
     "eslint-config-prettier": "^8.5.0",
     "fastify": "3.29.1",
-    "graasp-test": "github:graasp/graasp-test#23/sdk",
+    "graasp-test": "github:graasp/graasp-test",
     "husky": "7.0.4",
     "jest": "27.5.1",
     "prettier": "2.6.2",

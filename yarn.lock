@@ -895,9 +895,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@github:graasp/graasp-utils#15/testUtils":
+"@graasp/sdk@github:graasp/graasp-sdk":
   version: 0.1.0
-  resolution: "@graasp/sdk@https://github.com/graasp/graasp-utils.git#commit=4b1cc0b372be2daf27b194d16c3527cceb2cccf7"
+  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=513b28bc7081aca26ab55088eb12618f51eff922"
   dependencies:
     "@fastify/secure-session": 5.2.0
     aws-sdk: 2.1111.0
@@ -3496,7 +3496,7 @@ __metadata:
     "@commitlint/cli": 16.2.3
     "@commitlint/config-conventional": 16.2.1
     "@fastify/multipart": 6.0.0
-    "@graasp/sdk": "github:graasp/graasp-utils#15/testUtils"
+    "@graasp/sdk": "github:graasp/graasp-sdk"
     "@graasp/translations": "github:graasp/graasp-translations"
     "@trivago/prettier-plugin-sort-imports": 3.2.0
     "@types/content-disposition": 0.5.4
@@ -3511,7 +3511,7 @@ __metadata:
     eslint-config-prettier: ^8.5.0
     fastify: 3.29.1
     fs-extra: 10.1.0
-    graasp-test: "github:graasp/graasp-test#23/sdk"
+    graasp-test: "github:graasp/graasp-test"
     http-status-codes: 2.2.0
     husky: 7.0.4
     jest: 27.5.1
@@ -3524,12 +3524,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"graasp-test@github:graasp/graasp-test#23/sdk":
+"graasp-test@github:graasp/graasp-test":
   version: 0.1.0
-  resolution: "graasp-test@https://github.com/graasp/graasp-test.git#commit=7fcc0d6322512ff0e5e608a2af3a9373c786b420"
+  resolution: "graasp-test@https://github.com/graasp/graasp-test.git#commit=3ff1f7951d1c2439f84fab546bf8de60b530bd1c"
   dependencies:
     uuid: 8.3.2
-  checksum: b6fd88fb4cd5be9bad9547444aa5b5010ffe1f23468608bf251fae5eff25162d88ef1e893a6393525419480308b400124c93484dc526281dcd6b6af674ef71ec
+  checksum: aaa3759fe2842de03fdc99011623dced835636fe5e15598c8574b9d526c040615dac3bf06fd351007a07d267493f9cd4e70c14ef35b0b73fb2810f90be4bbae8
   languageName: node
   linkType: hard
 
