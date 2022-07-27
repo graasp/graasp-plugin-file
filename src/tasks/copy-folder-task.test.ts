@@ -6,6 +6,8 @@ import path from 'path';
 
 import { FastifyLoggerInstance } from 'fastify';
 
+import { DatabaseTransactionHandler } from '@graasp/sdk';
+
 import {
   DEFAULT_S3_OPTIONS,
   GRAASP_ACTOR,
@@ -15,6 +17,8 @@ import { LocalService } from '../fileServices/localService';
 import { S3Service } from '../fileServices/s3Service';
 import CopyFolderTask from './copy-folder-task';
 
+const mockHandler = {} as unknown as DatabaseTransactionHandler;
+const mockLogger = {} as FastifyLoggerInstance;
 const DEFAULT_LOCAL_OPTIONS = buildDefaultLocalOptions();
 const localService = new LocalService(DEFAULT_LOCAL_OPTIONS);
 const s3Instance = new S3({
@@ -51,7 +55,7 @@ describe('Copy Folder Task', () => {
       const newFileA = path.join(newFolder, 'file-a');
       const newFileB = path.join(newFolder, 'file-b');
 
-      await task.run({}, {} as FastifyLoggerInstance);
+      await task.run(mockHandler, mockLogger);
 
       expect(existsSync(newFolder)).toBeTruthy();
       expect(existsSync(newFileA)).toBeTruthy();
@@ -86,7 +90,7 @@ describe('Copy Folder Task', () => {
         originalFolderPath: 'some',
         newFolderPath: 'test',
       });
-      await task.run({}, {} as FastifyLoggerInstance);
+      await task.run(mockHandler, mockLogger);
 
       expect(s3Instance.listObjectsV2).toHaveBeenCalledTimes(1);
       expect(s3Instance.copyObject).toHaveBeenCalledTimes(mockObjects.length);

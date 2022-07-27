@@ -4,12 +4,11 @@ import path from 'path';
 
 import { FastifyLoggerInstance } from 'fastify';
 
-import { DatabaseTransactionHandler } from 'graasp';
+import { DatabaseTransactionHandler, ItemType } from '@graasp/sdk';
 
-import { ServiceMethod } from '..';
 import {
   DEFAULT_S3_OPTIONS,
-  FILE_SERVICES,
+  FILE_TYPES,
   GRAASP_ACTOR,
   TEXT_FILE_PATH,
   buildDefaultLocalOptions,
@@ -35,11 +34,11 @@ const s3Instance = new S3({
   },
 });
 const s3Service = new S3Service({ ...DEFAULT_S3_OPTIONS, s3Instance });
-const buildFileService = (service: ServiceMethod) => {
+const buildFileService = (service: ItemType) => {
   switch (service) {
-    case ServiceMethod.S3:
+    case ItemType.S3_FILE:
       return localService;
-    case ServiceMethod.LOCAL:
+    case ItemType.LOCAL_FILE:
     default:
       return s3Service;
   }
@@ -64,7 +63,7 @@ const buildInput = (opts?: {
 };
 
 describe('Upload File Task', () => {
-  it.each(FILE_SERVICES)('%s: Invalid filepath should throw', (service) => {
+  it.each(FILE_TYPES)('%s: Invalid filepath should throw', (service) => {
     const input = buildInput({ filepath: '' });
 
     const task = new UploadFileTask(actor, buildFileService(service), input);
@@ -77,7 +76,7 @@ describe('Upload File Task', () => {
     );
   });
 
-  it.each(FILE_SERVICES)('%s: Empty file should throw', (service) => {
+  it.each(FILE_TYPES)('%s: Empty file should throw', (service) => {
     const input = buildInput();
     input.file = null;
 
@@ -91,7 +90,7 @@ describe('Upload File Task', () => {
     );
   });
 
-  it.each(FILE_SERVICES)('%s: Empty size should throw', (service) => {
+  it.each(FILE_TYPES)('%s: Empty size should throw', (service) => {
     const input = buildInput({ size: 0 });
 
     const task = new UploadFileTask(actor, buildFileService(service), input);

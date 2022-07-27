@@ -1,4 +1,4 @@
-import { Item } from 'graasp';
+import { Item } from '@graasp/sdk';
 import { ItemMembershipTaskManager, Task, TaskRunner } from 'graasp-test';
 
 import TaskManager from '../src/task-manager';

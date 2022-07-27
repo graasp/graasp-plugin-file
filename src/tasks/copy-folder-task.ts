@@ -1,8 +1,12 @@
 import { FastifyLoggerInstance } from 'fastify';
 
-import { Actor, DatabaseTransactionHandler } from 'graasp';
+import {
+  Actor,
+  DatabaseTransactionHandler,
+  FileService,
+  TaskStatus,
+} from '@graasp/sdk';
 
-import FileService from '../fileServices/interface/fileService';
 import { BaseTask } from './base-task';
 
 export type CopyFolderType = {
@@ -27,7 +31,7 @@ class CopyFolderTask extends BaseTask<Actor, string> {
     _handler: DatabaseTransactionHandler,
     _log: FastifyLoggerInstance,
   ): Promise<void> {
-    this.status = 'RUNNING';
+    this.status = TaskStatus.RUNNING;
 
     const { originalFolderPath, newFolderPath } = this.input;
 
@@ -36,7 +40,7 @@ class CopyFolderTask extends BaseTask<Actor, string> {
       newFolderPath,
     });
 
-    this.status = 'OK';
+    this.status = TaskStatus.OK;
   }
 }
 

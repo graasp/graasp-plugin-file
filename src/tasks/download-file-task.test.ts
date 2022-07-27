@@ -6,12 +6,11 @@ import { v4 } from 'uuid';
 
 import { FastifyLoggerInstance, FastifyReply } from 'fastify';
 
-import { DatabaseTransactionHandler } from 'graasp';
+import { DatabaseTransactionHandler, ItemType } from '@graasp/sdk';
 
-import { ServiceMethod } from '..';
 import {
   DEFAULT_S3_OPTIONS,
-  FILE_SERVICES,
+  FILE_TYPES,
   GRAASP_ACTOR,
   TEXT_FILE_PATH,
   TEXT_PATH,
@@ -49,11 +48,11 @@ const s3Instance = new S3({
   },
 });
 const s3Service = new S3Service({ ...DEFAULT_S3_OPTIONS, s3Instance });
-const buildFileService = (service: ServiceMethod) => {
+const buildFileService = (service: ItemType) => {
   switch (service) {
-    case ServiceMethod.S3:
+    case ItemType.S3_FILE:
       return localService;
-    case ServiceMethod.LOCAL:
+    case ItemType.LOCAL_FILE:
     default:
       return s3Service;
   }
@@ -92,7 +91,7 @@ const buildInput = (opts?: {
 };
 
 describe('Download File Task', () => {
-  it.each(FILE_SERVICES)('%s: Invalid parameters should throw', (service) => {
+  it.each(FILE_TYPES)('%s: Invalid parameters should throw', (service) => {
     const input = buildInput({ filepath: '' });
 
     const task = new DownloadFileTask(actor, buildFileService(service), input);
