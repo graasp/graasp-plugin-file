@@ -2,9 +2,13 @@ import { ReadStream } from 'fs';
 
 import type { FastifyLoggerInstance, FastifyReply } from 'fastify';
 
-import { Actor, DatabaseTransactionHandler } from 'graasp';
+import {
+  Actor,
+  DatabaseTransactionHandler,
+  FileService,
+  TaskStatus,
+} from '@graasp/sdk';
 
-import FileService from '../fileServices/interface/fileService';
 import { DownloadFileInvalidParameterError } from '../utils/errors';
 import { BaseTask } from './base-task';
 
@@ -38,7 +42,7 @@ class DownloadFileTask extends BaseTask<Actor, ReadStream | string> {
     _handler: DatabaseTransactionHandler,
     _log: FastifyLoggerInstance,
   ): Promise<void> {
-    this.status = 'RUNNING';
+    this.status = TaskStatus.RUNNING;
 
     const { reply, itemId, filepath, mimetype, fileStorage, expiration } =
       this.input;
@@ -63,7 +67,7 @@ class DownloadFileTask extends BaseTask<Actor, ReadStream | string> {
         expiration,
       })) || null;
 
-    this.status = 'OK';
+    this.status = TaskStatus.OK;
   }
 }
 

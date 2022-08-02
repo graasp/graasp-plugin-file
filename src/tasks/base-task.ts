@@ -3,14 +3,13 @@ import { FastifyLoggerInstance } from 'fastify';
 import {
   Actor,
   DatabaseTransactionHandler,
+  FileService,
   IndividualResultType,
   PostHookHandlerType,
   PreHookHandlerType,
   Task,
   TaskStatus,
-} from 'graasp';
-
-import FileService from '../fileServices/interface/fileService';
+} from '@graasp/sdk';
 
 export abstract class BaseTask<A extends Actor, R> implements Task<Actor, R> {
   protected fileService: FileService;
@@ -35,7 +34,7 @@ export abstract class BaseTask<A extends Actor, R> implements Task<Actor, R> {
   constructor(actor: A, fileService: FileService) {
     this.fileService = fileService;
     this.actor = actor;
-    this.status = 'NEW';
+    this.status = TaskStatus.NEW;
   }
 
   abstract get name(): string;

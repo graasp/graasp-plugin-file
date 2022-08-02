@@ -1,6 +1,6 @@
 import fastify from 'fastify';
 
-import { TaskRunner } from 'graasp-test';
+import { Actor, TaskRunner } from '@graasp/sdk';
 
 import plugin, { GraaspPluginFileOptions } from '../src/plugin';
 
@@ -27,7 +27,7 @@ const build = async ({
   runner,
   options,
 }: {
-  runner: TaskRunner;
+  runner: TaskRunner<Actor>;
   options?: GraaspPluginFileOptions;
 }) => {
   const app = fastify();

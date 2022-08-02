@@ -3,17 +3,23 @@ import fs from 'fs';
 import fastifyMultipart from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
 
-import { Actor, IdParam, Member, Task } from 'graasp';
+import {
+  Actor,
+  FileItemType,
+  IdParam,
+  ItemType,
+  LocalFileConfiguration,
+  S3FileConfiguration,
+  Task,
+  spliceIntoChunks,
+} from '@graasp/sdk';
 
 import { download, upload } from './schema';
 import FileTaskManager from './task-manager';
-import { AuthTokenSubject, ServiceMethod } from './types';
 import {
   BuildFilePathFunction,
   DownloadPostHookTasksFunction,
   DownloadPreHookTasksFunction,
-  GraaspLocalFileItemOptions,
-  GraaspS3FileItemOptions,
   UploadPostHookTasksFunction,
   UploadPreHookTasksFunction,
 } from './types';
@@ -21,12 +27,11 @@ import {
   MAX_NB_TASKS_IN_PARALLEL,
   MAX_NUMBER_OF_FILES_UPLOAD,
 } from './utils/constants';
-import { spliceIntoChunks } from './utils/utils';
 
 export interface GraaspPluginFileOptions {
   shouldRedirectOnDownload?: boolean; // redirect value on download
   uploadMaxFileNb?: number; // max number of files to upload at a time
-  serviceMethod: ServiceMethod; // S3 or local
+  fileItemType: FileItemType; // S3 or local
 
   /** Function used to create the file path given an item id and a filename
    * The path should NOT start with a /
@@ -46,28 +51,21 @@ export interface GraaspPluginFileOptions {
   downloadPreHookTasks: DownloadPreHookTasksFunction;
   downloadPostHookTasks?: DownloadPostHookTasksFunction;
 
-  serviceOptions: {
-    s3: GraaspS3FileItemOptions;
-    local: GraaspLocalFileItemOptions;
+  fileConfigurations: {
+    s3: S3FileConfiguration;
+    local: LocalFileConfiguration;
   };
 }
 
 const DEFAULT_MAX_FILE_SIZE = 1024 * 1024 * 250; // 250MB
-
-declare module 'fastify' {
-  interface FastifyRequest {
-    authTokenSubject: AuthTokenSubject;
-    member: Member;
-  }
-}
 
 const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
   fastify,
   options,
 ) => {
   const {
-    serviceMethod,
-    serviceOptions,
+    fileItemType,
+    fileConfigurations,
     buildFilePath,
     uploadPreHookTasks,
     uploadPostHookTasks,
@@ -85,24 +83,24 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
   }
 
   if (
-    serviceMethod === ServiceMethod.LOCAL &&
-    !serviceOptions?.local?.storageRootPath.startsWith('/')
+    fileItemType === ItemType.LOCAL_FILE &&
+    !fileConfigurations?.local?.storageRootPath.startsWith('/')
   ) {
     throw new Error(
       'graasp-plugin-file: local service storageRootPath is malformed',
     );
   }
 
-  if (serviceMethod === ServiceMethod.S3) {
+  if (fileItemType === ItemType.S3_FILE) {
     if (buildFilePath('itemId', 'filename').startsWith('/')) {
       throw new Error('graasp-plugin-file: buildFilePath is not well defined');
     }
 
     if (
-      !serviceOptions?.s3?.s3Region ||
-      !serviceOptions?.s3?.s3Bucket ||
-      !serviceOptions?.s3?.s3AccessKeyId ||
-      !serviceOptions?.s3?.s3SecretAccessKey
+      !fileConfigurations?.s3?.s3Region ||
+      !fileConfigurations?.s3?.s3Bucket ||
+      !fileConfigurations?.s3?.s3AccessKeyId ||
+      !fileConfigurations?.s3?.s3SecretAccessKey
     ) {
       throw new Error(
         'graasp-plugin-file: mandatory options for s3 service missing',
@@ -122,7 +120,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
     },
   });
 
-  const fileTaskManager = new FileTaskManager(serviceOptions, serviceMethod);
+  const fileTaskManager = new FileTaskManager(fileConfigurations, fileItemType);
 
   fastify.route<{ Querystring: IdParam; Body: any }>({
     method: 'POST',
@@ -186,7 +184,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
       }
 
       // chunk to run in parallel
-      const chunkedTasks = spliceIntoChunks(
+      const chunkedTasks = spliceIntoChunks<typeof sequences[0]>(
         sequences,
         Math.ceil(sequences.length / MAX_NB_TASKS_IN_PARALLEL),
       ).map((s) => s.flat());

@@ -2,9 +2,14 @@ import { ReadStream } from 'fs';
 
 import type { FastifyLoggerInstance } from 'fastify';
 
-import { Actor, DatabaseTransactionHandler, Item } from 'graasp';
+import {
+  Actor,
+  DatabaseTransactionHandler,
+  FileService,
+  Item,
+  TaskStatus,
+} from '@graasp/sdk';
 
-import FileService from '../fileServices/interface/fileService';
 import {
   UploadEmptyFileError,
   UploadFileInvalidParameterError,
@@ -39,7 +44,7 @@ class UploadFileTask extends BaseTask<Actor, Item> {
     _handler: DatabaseTransactionHandler,
     _log: FastifyLoggerInstance,
   ): Promise<void> {
-    this.status = 'RUNNING';
+    this.status = TaskStatus.RUNNING;
 
     const { file, mimetype, filepath, size } = this.input;
 
@@ -66,7 +71,7 @@ class UploadFileTask extends BaseTask<Actor, Item> {
       mimetype,
     });
 
-    this.status = 'OK';
+    this.status = TaskStatus.OK;
   }
 }
 

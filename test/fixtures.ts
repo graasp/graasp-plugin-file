@@ -1,8 +1,6 @@
 import path from 'path/posix';
 
-import { Actor, Item, Member, Task } from 'graasp';
-
-import { ServiceMethod } from '../src';
+import { Actor, FileItemType, Item, ItemType, Member, Task } from '@graasp/sdk';
 
 export const ROOT_PATH = './test/files';
 export const IMAGE_PATH = './test/files/image.jpeg';
@@ -61,4 +59,7 @@ export const buildDefaultLocalOptions = (storageRootPath?: string) => ({
   storageRootPath: storageRootPath ?? path.resolve(__dirname, './tmp'),
 });
 
-export const FILE_SERVICES = [ServiceMethod.LOCAL, ServiceMethod.S3];
+export const FILE_TYPES: FileItemType[] = [
+  ItemType.S3_FILE,
+  ItemType.LOCAL_FILE,
+];
