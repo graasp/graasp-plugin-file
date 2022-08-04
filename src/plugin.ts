@@ -24,6 +24,7 @@ import {
   UploadPreHookTasksFunction,
 } from './types';
 import {
+  DEFAULT_MAX_FILE_SIZE,
   MAX_NB_TASKS_IN_PARALLEL,
   MAX_NUMBER_OF_FILES_UPLOAD,
 } from './utils/constants';
@@ -31,6 +32,7 @@ import {
 export interface GraaspPluginFileOptions {
   shouldRedirectOnDownload?: boolean; // redirect value on download
   uploadMaxFileNb?: number; // max number of files to upload at a time
+  maxFileSize?: number; // max size for an uploaded file in bytes
   fileItemType: FileItemType; // S3 or local
 
   /** Function used to create the file path given an item id and a filename
@@ -57,8 +59,6 @@ export interface GraaspPluginFileOptions {
   };
 }
 
-const DEFAULT_MAX_FILE_SIZE = 1024 * 1024 * 250; // 250MB
-
 const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
   fastify,
   options,
@@ -73,6 +73,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
     downloadPreHookTasks,
     downloadPostHookTasks,
     uploadMaxFileNb = MAX_NUMBER_OF_FILES_UPLOAD,
+    maxFileSize = DEFAULT_MAX_FILE_SIZE,
     shouldRedirectOnDownload = true,
   } = options;
 
@@ -114,7 +115,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
       // fieldSize: 1000000,           // Max field value size in bytes (Default: 1MB).
       fields: 5, // Max number of non-file fields (Default: Infinity).
       // allow some fields for app data and app setting
-      fileSize: DEFAULT_MAX_FILE_SIZE, // For multipart forms, the max file size (Default: Infinity).
+      fileSize: maxFileSize, // For multipart forms, the max file size (Default: Infinity).
       files: uploadMaxFileNb, // Max number of file fields (Default: Infinity).
       // headerPairs: 2000             // Max number of header key=>value pairs (Default: 2000 - same as node's http).
     },
