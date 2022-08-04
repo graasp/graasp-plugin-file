@@ -11,4 +11,4 @@ export const MAX_NB_TASKS_IN_PARALLEL = 5;
 
 export const PLUGIN_NAME = 'graasp-plugin-file';
 
-const DEFAULT_MAX_FILE_SIZE = 1024 * 1024 * 1024; // 1GB
+export const DEFAULT_MAX_FILE_SIZE = 1024 * 1024 * 1024; // 1GB
