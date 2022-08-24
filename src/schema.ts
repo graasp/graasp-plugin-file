@@ -19,6 +19,10 @@ const download = {
         enum: THUMBNAIL_SIZES,
         default: THUMBNAIL_SIZES[0],
       },
+      replyUrl: {
+        type: 'boolean',
+        default: false,
+      },
     },
     required: ['size'],
     additionalProperties: false,
