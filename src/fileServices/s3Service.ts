@@ -140,10 +140,27 @@ export class S3Service implements FileService {
       // check whether file exists
       await this.getMetadata(filepath);
 
+      // generate variable expiration time to achieve a constant expiration date in the same interval
+      const variableExpiration = () => {
+        const currentTime = new Date();
+        currentTime.setMilliseconds(0);
+        const desiredExpiration = new Date(currentTime);
+      
+        desiredExpiration.setMinutes(
+          Math.ceil(desiredExpiration.getMinutes() / 10) * 10 + 5
+        );
+        desiredExpiration.setSeconds(0);
+        desiredExpiration.setMilliseconds(0);
+      
+        const variableExpirationSeconds =
+          (desiredExpiration.getTime() - currentTime.getTime()) / 1000;
+        return variableExpirationSeconds;
+      };
+
       const param = {
         Bucket: bucket,
         Key: filepath,
-        Expires: expiration ?? S3_PRESIGNED_EXPIRATION,
+        Expires: variableExpiration() ?? S3_PRESIGNED_EXPIRATION,
       };
 
       const url = await this.s3Instance.getSignedUrlPromise('getObject', param);
