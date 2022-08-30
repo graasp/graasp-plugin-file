@@ -151,7 +151,7 @@ export class S3Service implements FileService {
       // Redirect to the object presigned url
       if (reply) {
         if(replyUrl) {
-          reply.status(StatusCodes.OK).send({ url: url });
+          reply.status(StatusCodes.OK).send({ path: url, serviceType: 's3Service' });
         } else {
           // It is necessary to add the header manually, because the redirect sends the request and
           // when the fastify-cors plugin try to add the header it's already sent and can't add it.
