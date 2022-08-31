@@ -897,7 +897,7 @@ __metadata:
 
 "@graasp/sdk@github:graasp/graasp-sdk#40/AddReplyurlToFileserviceInterface":
   version: 0.1.0
-  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=ba6af023a7c909b1b717571fa834133fdc32669d"
+  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=75b3975f41a84ed616cc4b4ef2e4aac84ca29a36"
   dependencies:
     "@fastify/secure-session": 5.2.0
     aws-sdk: 2.1111.0
@@ -908,7 +908,7 @@ __metadata:
     qs: 6.11.0
     slonik: 28.1.1
     uuid: 8.3.2
-  checksum: 2d4424fce5c30c622041e75359410d279145eba6d11ac3a4401aed4742b9c1044e9e8c69e946b4a9dea6e6a2c481e90e82e7ae0b00f3edbb1d1105bd70e6d328
+  checksum: b28d9cc730306cb6486a0815140b7626cbb7b317830d34c16c628d5fd8cdf2485f0ebf1c19e8d9e224e0d1ea0f609cf0e492f0e5ceec7bcfa5c1b4290cec0f38
   languageName: node
   linkType: hard
 

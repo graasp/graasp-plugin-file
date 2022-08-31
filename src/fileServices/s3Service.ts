@@ -7,7 +7,7 @@ import path from 'path';
 
 import { FileService, S3FileConfiguration } from '@graasp/sdk';
 
-import { S3_PRESIGNED_EXPIRATION } from '../utils/constants';
+import { S3_PRESIGNED_EXPIRATION, SERVICE_TYPES } from '../utils/constants';
 import { S3FileNotFound } from '../utils/errors';
 
 export class S3Service implements FileService {
@@ -151,7 +151,9 @@ export class S3Service implements FileService {
       // Redirect to the object presigned url
       if (reply) {
         if(replyUrl) {
-          reply.status(StatusCodes.OK).send({ path: url, serviceType: 's3Service' });
+          const replyUrlExpiration = (expiration ?? S3_PRESIGNED_EXPIRATION) - 60;
+          reply.header('Cache-Control', `max-age=${replyUrlExpiration}`)
+          reply.status(StatusCodes.OK).send({ url: url, serviceType: SERVICE_TYPES.S3 });
         } else {
           // It is necessary to add the header manually, because the redirect sends the request and
           // when the fastify-cors plugin try to add the header it's already sent and can't add it.
