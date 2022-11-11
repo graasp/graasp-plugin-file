@@ -9,7 +9,6 @@ import { pipeline } from 'stream/promises';
 import { FileService, LocalFileConfiguration } from '@graasp/sdk';
 
 import { LocalFileNotFound } from '../utils/errors';
-import { SERVICE_TYPES } from '../utils/constants';
 
 export class LocalService implements FileService {
   private readonly options: LocalFileConfiguration;
@@ -68,7 +67,7 @@ export class LocalService implements FileService {
     if (reply) {
       if (replyUrl) {
         const localUrl = new URL(filepath, this.options.localFilesHost);
-        reply.status(StatusCodes.OK).send({ url: localUrl, serviceType: SERVICE_TYPES.LOCAL });
+        reply.status(StatusCodes.OK).send({ url: localUrl });
         return
       }
       // Get thumbnail path
