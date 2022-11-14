@@ -196,7 +196,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
     },
   });
 
-  fastify.get<{ Params: IdParam; Querystring: { size?: string } }>(
+  fastify.get<{ Params: IdParam; Querystring: { size?: string; replyUrl?: boolean } }>(
     '/:id/download',
     { schema: download },
     async (request, reply) => {
@@ -204,7 +204,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
         member,
         authTokenSubject,
         params: { id: itemId },
-        query: { size },
+        query: { size, replyUrl },
         log,
       } = request;
 
@@ -221,6 +221,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (
       const task = fileTaskManager.createDownloadFileTask(actor, {
         reply: shouldRedirectOnDownload ? reply : null,
         itemId,
+        replyUrl,
       });
       // get filepath and mimetype from last task
       task.getInput = () => prehookTasks[prehookTasks.length - 1].getResult();

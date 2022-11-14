@@ -1,6 +1,7 @@
 import contentDisposition from 'content-disposition';
 import fs from 'fs';
 import fse from 'fs-extra';
+import { StatusCodes } from 'http-status-codes';
 import { access, copyFile, mkdir, rm } from 'fs/promises';
 import path from 'path';
 import { pipeline } from 'stream/promises';
@@ -52,7 +53,7 @@ export class LocalService implements FileService {
     await rm(this.buildFullPath(folderPath), { recursive: true });
   }
 
-  async downloadFile({ reply, filepath, itemId, mimetype }) {
+  async downloadFile({ reply, filepath, itemId, mimetype, replyUrl }) {
     // ensure the file exists, if not throw error
     try {
       await access(this.buildFullPath(filepath));
@@ -64,6 +65,11 @@ export class LocalService implements FileService {
     }
 
     if (reply) {
+      if (replyUrl) {
+        const localUrl = new URL(filepath, this.options.localFilesHost);
+        reply.status(StatusCodes.OK).send({ url: localUrl });
+        return
+      }
       // Get thumbnail path
       reply.type(mimetype);
       // this header will make the browser download the file with 'name'

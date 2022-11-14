@@ -19,6 +19,7 @@ export type DownloadFileInputType = {
   mimetype?: string;
   fileStorage?: string;
   expiration?: number;
+  replyUrl?: boolean;
 };
 
 class DownloadFileTask extends BaseTask<Actor, ReadStream | string> {
@@ -44,7 +45,7 @@ class DownloadFileTask extends BaseTask<Actor, ReadStream | string> {
   ): Promise<void> {
     this.status = TaskStatus.RUNNING;
 
-    const { reply, itemId, filepath, mimetype, fileStorage, expiration } =
+    const { reply, itemId, filepath, mimetype, fileStorage, expiration, replyUrl } =
       this.input;
 
     if (!filepath || !itemId) {
@@ -65,6 +66,7 @@ class DownloadFileTask extends BaseTask<Actor, ReadStream | string> {
         mimetype,
         fileStorage,
         expiration,
+        replyUrl,
       })) || null;
 
     this.status = TaskStatus.OK;

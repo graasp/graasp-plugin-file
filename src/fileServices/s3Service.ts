@@ -134,7 +134,7 @@ export class S3Service implements FileService {
     }
   }
 
-  async downloadFile({ reply, filepath, itemId, fileStorage, expiration }) {
+  async downloadFile({ reply, filepath, itemId, fileStorage, expiration, replyUrl }) {
     const { s3Bucket: bucket } = this.options;
     try {
       // check whether file exists
@@ -150,11 +150,17 @@ export class S3Service implements FileService {
 
       // Redirect to the object presigned url
       if (reply) {
-        // It is necessary to add the header manually, because the redirect sends the request and
-        // when the fastify-cors plugin try to add the header it's already sent and can't add it.
-        // So we add it because otherwise the browser won't send the cookie
-        reply.header('Access-Control-Allow-Credentials', 'true');
-        reply.redirect(url);
+        if(replyUrl) {
+          const replyUrlExpiration = (expiration ?? S3_PRESIGNED_EXPIRATION) - 60;
+          reply.header('Cache-Control', `max-age=${replyUrlExpiration}`)
+          reply.status(StatusCodes.OK).send({ url: url });
+        } else {
+          // It is necessary to add the header manually, because the redirect sends the request and
+          // when the fastify-cors plugin try to add the header it's already sent and can't add it.
+          // So we add it because otherwise the browser won't send the cookie
+          reply.header('Access-Control-Allow-Credentials', 'true');
+          reply.redirect(url);
+        }
       }
       // return readstream of the file saved at given fileStorage path
       else if (fileStorage) {

@@ -38,7 +38,7 @@
   "devDependencies": {
     "@commitlint/cli": "16.2.3",
     "@commitlint/config-conventional": "16.2.1",
-    "@graasp/sdk": "github:graasp/graasp-sdk",
+    "@graasp/sdk": "github:graasp/graasp-sdk#40/AddReplyurlToFileserviceInterface",
     "@trivago/prettier-plugin-sort-imports": "3.2.0",
     "@types/content-disposition": "0.5.4",
     "@types/fs-extra": "9.0.13",
